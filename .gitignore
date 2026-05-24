@@ -5,3 +5,19 @@ dist/
 build/
 .env
 .env.*
+
+# Java / Maven
+target/
+**/target/
+*.class
+*.jar
+!**/.mvn/wrapper/maven-wrapper.jar
+*.log
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
