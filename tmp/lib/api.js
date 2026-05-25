@@ -1,12 +1,36 @@
 // API Base URL - Backend Java Spring Boot
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
 
+const TOKEN_KEY = 'gocart_token';
+const USER_KEY = 'gocart_user';
+
+export const authStorage = {
+    getToken: () => (typeof window === 'undefined' ? null : window.localStorage.getItem(TOKEN_KEY)),
+    getUser: () => {
+        if (typeof window === 'undefined') return null;
+        const raw = window.localStorage.getItem(USER_KEY);
+        return raw ? JSON.parse(raw) : null;
+    },
+    set: (token, user) => {
+        if (typeof window === 'undefined') return;
+        window.localStorage.setItem(TOKEN_KEY, token);
+        window.localStorage.setItem(USER_KEY, JSON.stringify(user));
+    },
+    clear: () => {
+        if (typeof window === 'undefined') return;
+        window.localStorage.removeItem(TOKEN_KEY);
+        window.localStorage.removeItem(USER_KEY);
+    },
+};
+
 // Helper function để gọi API
 async function apiCall(endpoint, options = {}) {
     const url = `${API_BASE_URL}${endpoint}`;
+    const token = authStorage.getToken();
     const config = {
         headers: {
             'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
             ...options.headers,
         },
         ...options,
@@ -14,17 +38,36 @@ async function apiCall(endpoint, options = {}) {
 
     try {
         const response = await fetch(url, config);
-        
+
         if (!response.ok) {
-            throw new Error(`API Error: ${response.status} ${response.statusText}`);
+            let message = `API Error: ${response.status} ${response.statusText}`;
+            try {
+                const errorBody = await response.json();
+                if (errorBody?.message) message = errorBody.message;
+            } catch (_) { /* response has no JSON body */ }
+            throw new Error(message);
         }
-        
+
+        if (response.status === 204) return null;
         return await response.json();
     } catch (error) {
         console.error('API Call Error:', error);
         throw error;
     }
 }
+
+// Auth API
+export const authAPI = {
+    register: (data) => apiCall('/auth/register', {
+        method: 'POST',
+        body: JSON.stringify(data),
+    }),
+    login: (data) => apiCall('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify(data),
+    }),
+    me: () => apiCall('/auth/me'),
+};
 
 // Products API
 export const productsAPI = {

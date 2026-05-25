@@ -1,20 +1,30 @@
 'use client'
-import { Search, ShoppingCart } from "lucide-react";
+import { LogOut, Search, ShoppingCart } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import toast from "react-hot-toast";
+import { clearAuth } from "@/lib/features/auth/authSlice";
 
 const Navbar = () => {
 
     const router = useRouter();
+    const dispatch = useDispatch();
 
     const [search, setSearch] = useState('')
     const cartCount = useSelector(state => state.cart.total)
+    const user = useSelector(state => state.auth.user)
 
     const handleSearch = (e) => {
         e.preventDefault()
         router.push(`/shop?search=${search}`)
+    }
+
+    const handleLogout = () => {
+        dispatch(clearAuth())
+        toast.success('Đã đăng xuất')
+        router.push('/')
     }
 
     return (
@@ -47,17 +57,38 @@ const Navbar = () => {
                             <button className="absolute -top-1 left-3 text-[8px] text-white bg-slate-600 size-3.5 rounded-full">{cartCount}</button>
                         </Link>
 
-                        <button className="px-8 py-2 bg-indigo-500 hover:bg-indigo-600 transition text-white rounded-full">
-                            Login
-                        </button>
+                        {user ? (
+                            <div className="flex items-center gap-3">
+                                <span className="text-slate-700 font-medium">Hi, {user.name}</span>
+                                <button
+                                    onClick={handleLogout}
+                                    className="flex items-center gap-1 px-4 py-2 bg-slate-100 hover:bg-slate-200 transition text-slate-700 rounded-full text-sm"
+                                >
+                                    <LogOut size={14} /> Logout
+                                </button>
+                            </div>
+                        ) : (
+                            <Link href="/login" className="px-8 py-2 bg-indigo-500 hover:bg-indigo-600 transition text-white rounded-full">
+                                Login
+                            </Link>
+                        )}
 
                     </div>
 
                     {/* Mobile User Button  */}
                     <div className="sm:hidden">
-                        <button className="px-7 py-1.5 bg-indigo-500 hover:bg-indigo-600 text-sm transition text-white rounded-full">
-                            Login
-                        </button>
+                        {user ? (
+                            <button
+                                onClick={handleLogout}
+                                className="px-7 py-1.5 bg-slate-200 hover:bg-slate-300 text-sm transition text-slate-700 rounded-full"
+                            >
+                                Logout
+                            </button>
+                        ) : (
+                            <Link href="/login" className="px-7 py-1.5 bg-indigo-500 hover:bg-indigo-600 text-sm transition text-white rounded-full">
+                                Login
+                            </Link>
+                        )}
                     </div>
                 </div>
             </div>

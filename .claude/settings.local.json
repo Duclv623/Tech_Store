@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls d:/Techstore/Tech_Store/tmp 2>&1; ls d:/Techstore/ 2>&1)",
+      "Read(//d/Techstore/**)"
+    ]
+  }
+}
