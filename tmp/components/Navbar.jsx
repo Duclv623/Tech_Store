@@ -1,7 +1,7 @@
 'use client'
 import { ChevronDown, LogOut, Package, Search, ShoppingCart, UserCircle2 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import toast from "react-hot-toast";
@@ -11,7 +11,17 @@ import { clearAddresses } from "@/lib/features/address/addressSlice";
 const Navbar = () => {
 
     const router = useRouter();
+    const pathname = usePathname();
     const dispatch = useDispatch();
+
+    const navLinkClass = (href) => {
+        const isActive = href === '/' ? pathname === '/' : pathname.startsWith(href);
+        return `relative pb-1 transition hover:text-indigo-600 ${
+            isActive
+                ? "text-indigo-600 font-medium after:content-[''] after:absolute after:left-0 after:right-0 after:-bottom-0.5 after:h-0.5 after:bg-indigo-600 after:rounded-full"
+                : "text-slate-600"
+        }`;
+    };
 
     const [search, setSearch] = useState('')
     const cartCount = useSelector(state => state.cart.total)
@@ -43,10 +53,10 @@ const Navbar = () => {
 
                     {/* Desktop Menu */}
                     <div className="hidden sm:flex items-center gap-4 lg:gap-8 text-slate-600">
-                        <Link href="/">Trang chủ</Link>
-                        <Link href="/shop">Cửa hàng</Link>
-                        <Link href="/">Giới thiệu</Link>
-                        <Link href="/">Liên hệ</Link>
+                        <Link href="/" className={navLinkClass('/')}>Trang chủ</Link>
+                        <Link href="/shop" className={navLinkClass('/shop')}>Cửa hàng</Link>
+                        <Link href="/about" className={navLinkClass('/about')}>Giới thiệu</Link>
+                        <Link href="/contact" className={navLinkClass('/contact')}>Liên hệ</Link>
 
                         <form onSubmit={handleSearch} className="hidden xl:flex items-center w-xs text-sm gap-2 bg-slate-100 px-4 py-3 rounded-full">
                             <Search size={18} className="text-slate-600" />
