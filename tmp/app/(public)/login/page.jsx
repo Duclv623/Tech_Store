@@ -26,7 +26,7 @@ export default function LoginPage() {
             toast.success(`Welcome back, ${res.user.name}!`);
             router.push('/');
         } catch (err) {
-            toast.error(err.message || 'Login failed');
+            toast.error(err.message || 'Đăng nhập thất bại');
         } finally {
             setLoading(false);
         }

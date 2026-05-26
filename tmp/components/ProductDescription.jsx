@@ -8,6 +8,8 @@ const ProductDescription = ({ product }) => {
 
     const [selectedTab, setSelectedTab] = useState('Description')
 
+    const tabLabels = { Description: 'Mô tả', Reviews: 'Đánh giá' }
+
     return (
         <div className="my-18 text-sm text-slate-600">
 
@@ -15,7 +17,7 @@ const ProductDescription = ({ product }) => {
             <div className="flex border-b border-slate-200 mb-6 max-w-2xl">
                 {['Description', 'Reviews'].map((tab, index) => (
                     <button className={`${tab === selectedTab ? 'border-b-[1.5px] font-semibold' : 'text-slate-400'} px-3 py-2 font-medium`} key={index} onClick={() => setSelectedTab(tab)}>
-                        {tab}
+                        {tabLabels[tab]}
                     </button>
                 ))}
             </div>
@@ -38,12 +40,12 @@ const ProductDescription = ({ product }) => {
                                     ))}
                                 </div>
                                 <p className="text-sm max-w-lg my-4">{item.review}</p>
-                                <p className="font-medium text-slate-800">{item.user?.name || 'Anonymous'}</p>
+                                <p className="font-medium text-slate-800">{item.user?.name || 'Ẩn danh'}</p>
                                 <p className="mt-3 font-light">{item.createdAt ? new Date(item.createdAt).toDateString() : ''}</p>
                             </div>
                         </div>
                     )) : (
-                        <p className="text-slate-500">No reviews yet</p>
+                        <p className="text-slate-500">Chưa có đánh giá nào</p>
                     )}
                 </div>
             )}
@@ -53,9 +55,9 @@ const ProductDescription = ({ product }) => {
                 <div className="flex gap-3 mt-14">
                     <Image src={product.store.logo || '/placeholder.png'} alt="" className="size-11 rounded-full ring ring-slate-400" width={100} height={100} />
                     <div>
-                        <p className="font-medium text-slate-600">Product by {product.store.name || 'Unknown Store'}</p>
+                        <p className="font-medium text-slate-600">Sản phẩm bởi {product.store.name || 'Cửa hàng không xác định'}</p>
                         {product.store.username && (
-                            <Link href={`/shop/${product.store.username}`} className="flex items-center gap-1.5 text-green-500"> view store <ArrowRight size={14} /></Link>
+                            <Link href={`/shop/${product.store.username}`} className="flex items-center gap-1.5 text-green-500"> Xem cửa hàng <ArrowRight size={14} /></Link>
                         )}
                     </div>
                 </div>

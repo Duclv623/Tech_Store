@@ -1,16 +1,15 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import toast from 'react-hot-toast'
 import { Mail, Phone, MapPin, User as UserIcon, FileText, Image as ImageIcon } from 'lucide-react'
-import { usersAPI } from '@/lib/api'
+import { usersAPI, authStorage } from '@/lib/api'
 import { setAuth } from '@/lib/features/auth/authSlice'
 
 export default function ProfilePage() {
     const router = useRouter()
     const dispatch = useDispatch()
-    const token = useSelector(state => state.auth.token)
 
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
@@ -24,6 +23,7 @@ export default function ProfilePage() {
     })
 
     useEffect(() => {
+        const token = authStorage.getToken()
         if (!token) {
             router.replace('/login')
             return
@@ -41,7 +41,7 @@ export default function ProfilePage() {
             })
             .catch(err => toast.error(err.message || 'Không tải được hồ sơ'))
             .finally(() => setLoading(false))
-    }, [token, router])
+    }, [router])
 
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value })
@@ -53,7 +53,7 @@ export default function ProfilePage() {
         try {
             const { email, ...payload } = form
             const updated = await usersAPI.updateProfile(payload)
-            dispatch(setAuth({ token, user: updated }))
+            dispatch(setAuth({ token: authStorage.getToken(), user: updated }))
             toast.success('Đã cập nhật hồ sơ')
         } catch (err) {
             toast.error(err.message || 'Cập nhật thất bại')

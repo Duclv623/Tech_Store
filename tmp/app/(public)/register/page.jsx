@@ -26,7 +26,7 @@ export default function RegisterPage() {
             toast.success(`Tạo tài khoản thành công, ${res.user.name}!`);
             router.push('/');
         } catch (err) {
-            toast.error(err.message || 'Register failed');
+            toast.error(err.message || 'Đăng ký thất bại');
         } finally {
             setLoading(false);
         }

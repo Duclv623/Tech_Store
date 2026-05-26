@@ -35,11 +35,11 @@ export default function OrdersAreaChart({ allOrders = [] }) {
     if (chartData.length === 0) {
         return (
             <div className="w-full max-w-4xl h-[300px] text-xs">
-                <h3 className="text-lg font-medium text-slate-800 mb-4 pt-2 text-right"> 
-                    <span className='text-slate-500'>Orders /</span> Day
+                <h3 className="text-lg font-medium text-slate-800 mb-4 pt-2 text-right">
+                    <span className='text-slate-500'>Đơn hàng /</span> Ngày
                 </h3>
                 <div className="flex items-center justify-center h-full text-slate-400">
-                    <p>No orders data available</p>
+                    <p>Chưa có dữ liệu đơn hàng</p>
                 </div>
             </div>
         );
@@ -47,12 +47,12 @@ export default function OrdersAreaChart({ allOrders = [] }) {
 
     return (
         <div className="w-full max-w-4xl h-[300px] text-xs">
-            <h3 className="text-lg font-medium text-slate-800 mb-4 pt-2 text-right"> <span className='text-slate-500'>Orders /</span> Day</h3>
-            <ResponsiveContainer width="100%" height="100%"> 
+            <h3 className="text-lg font-medium text-slate-800 mb-4 pt-2 text-right"> <span className='text-slate-500'>Đơn hàng /</span> Ngày</h3>
+            <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="date" />
-                    <YAxis allowDecimals={false} label={{ value: 'Orders', angle: -90, position: 'insideLeft' }} />
+                    <YAxis allowDecimals={false} label={{ value: 'Đơn hàng', angle: -90, position: 'insideLeft' }} />
                     <Tooltip />
                     <Area type="monotone" dataKey="orders" stroke="#4f46e5" fill="#8884d8" strokeWidth={2} />
                 </AreaChart>

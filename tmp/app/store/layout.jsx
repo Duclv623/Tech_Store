@@ -1,8 +1,8 @@
 import StoreLayout from "@/components/store/StoreLayout";
 
 export const metadata = {
-    title: "GoCart. - Store Dashboard",
-    description: "GoCart. - Store Dashboard",
+    title: "GoCart. - Bảng điều khiển Cửa hàng",
+    description: "GoCart. - Bảng điều khiển Cửa hàng",
 };
 
 export default function RootAdminLayout({ children }) {

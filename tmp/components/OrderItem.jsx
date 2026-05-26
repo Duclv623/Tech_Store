@@ -16,6 +16,21 @@ const OrderItem = ({ order }) => {
     const orderItems = order.orderItems || [];
     const address = order.address;
 
+    const statusLabelMap = {
+        DELIVERED: 'Đã giao',
+        SHIPPED: 'Đang giao',
+        ORDER_PLACED: 'Đã đặt',
+        PROCESSING: 'Đang xử lý',
+        CANCELLED: 'Đã hủy',
+        delivered: 'Đã giao',
+        shipped: 'Đang giao',
+        order_placed: 'Đã đặt',
+        processing: 'Đang xử lý',
+        cancelled: 'Đã hủy',
+        confirmed: 'Đã xác nhận',
+    };
+    const translateStatus = (s) => statusLabelMap[s] || (s ? s.split('_').join(' ').toLowerCase() : '');
+
     return (
         <>
             <tr className="text-sm">
@@ -39,13 +54,13 @@ const OrderItem = ({ order }) => {
                                     </div>
                                     <div className="flex flex-col justify-center text-sm">
                                         <p className="font-medium text-slate-600 text-base">{product?.name || 'Sản phẩm'}</p>
-                                        <p>{currency}{item.price} Qty : {item.quantity} </p>
+                                        <p>{currency}{item.price} SL: {item.quantity} </p>
                                         <p className="mb-1">{new Date(order.createdAt).toDateString()}</p>
                                         {product && (
                                             <div>
                                                 {ratings.find(rating => order.id === rating.orderId && product.id === rating.productId)
                                                     ? <Rating value={ratings.find(rating => order.id === rating.orderId && product.id === rating.productId).rating} />
-                                                    : <button onClick={() => setRatingModal({ orderId: order.id, productId: product.id })} className={`text-green-500 hover:bg-green-50 transition ${order.status !== "DELIVERED" && 'hidden'}`}>Rate Product</button>
+                                                    : <button onClick={() => setRatingModal({ orderId: order.id, productId: product.id })} className={`text-green-500 hover:bg-green-50 transition ${order.status !== "DELIVERED" && 'hidden'}`}>Đánh giá sản phẩm</button>
                                                 }
                                             </div>
                                         )}
@@ -79,7 +94,7 @@ const OrderItem = ({ order }) => {
                             }`}
                     >
                         <DotIcon size={10} className="scale-250" />
-                        {order.status.split('_').join(' ').toLowerCase()}
+                        {translateStatus(order.status)}
                     </div>
                 </td>
             </tr>
@@ -96,7 +111,7 @@ const OrderItem = ({ order }) => {
                     <br />
                     <div className="flex items-center">
                         <span className='text-center mx-auto px-6 py-1.5 rounded bg-green-100 text-green-700' >
-                            {order.status.replace(/_/g, ' ').toLowerCase()}
+                            {translateStatus(order.status)}
                         </span>
                     </div>
                 </td>
