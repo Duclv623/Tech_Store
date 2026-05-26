@@ -18,7 +18,8 @@ model User {
     phone String 
     bio String 
     address String
-    updatedAt String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
     image String
     cart  Json   @default("{}")
 
