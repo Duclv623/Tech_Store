@@ -40,6 +40,12 @@ async function apiCall(endpoint, options = {}) {
         const response = await fetch(url, config);
 
         if (!response.ok) {
+            if ((response.status === 401 || response.status === 403) && token) {
+                authStorage.clear();
+                if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+                    window.location.href = '/login';
+                }
+            }
             let message = `API Error: ${response.status} ${response.statusText}`;
             try {
                 const errorBody = await response.json();
@@ -93,21 +99,22 @@ export const productsAPI = {
 // Orders API
 export const ordersAPI = {
     getAll: () => apiCall('/orders'),
+    getMine: () => apiCall('/orders/me'),
     getById: (id) => apiCall(`/orders/${id}`),
     getByUser: (userId) => apiCall(`/orders/user/${userId}`),
     getByStore: (storeId) => apiCall(`/orders/store/${storeId}`),
     getByStoreAndStatus: (storeId, status) => apiCall(`/orders/store/${storeId}/status/${status}`),
+    place: (payload) => apiCall('/orders/place', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+    }),
     create: (order) => apiCall('/orders', {
         method: 'POST',
         body: JSON.stringify(order),
     }),
-    update: (id, order) => apiCall(`/orders/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify(order),
-    }),
     updateStatus: (id, status) => apiCall(`/orders/${id}/status`, {
         method: 'PATCH',
-        body: JSON.stringify({ status }),
+        body: JSON.stringify(status),
     }),
     delete: (id) => apiCall(`/orders/${id}`, {
         method: 'DELETE',
@@ -119,6 +126,11 @@ export const usersAPI = {
     getAll: () => apiCall('/users'),
     getById: (id) => apiCall(`/users/${id}`),
     getByEmail: (email) => apiCall(`/users/email/${email}`),
+    getProfile: () => apiCall('/users/profile'),
+    updateProfile: (data) => apiCall('/users/profile', {
+        method: 'PUT',
+        body: JSON.stringify(data),
+    }),
     create: (user) => apiCall('/users', {
         method: 'POST',
         body: JSON.stringify(user),

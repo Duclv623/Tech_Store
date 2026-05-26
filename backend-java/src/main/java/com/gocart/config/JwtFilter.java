@@ -6,6 +6,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -15,6 +16,7 @@ import java.io.IOException;
 import java.util.Collections;
 
 @Component
+@Slf4j
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
 
@@ -34,8 +36,10 @@ public class JwtFilter extends OncePerRequestFilter {
                             new UsernamePasswordAuthenticationToken(userId, null, Collections.emptyList());
                     SecurityContextHolder.getContext().setAuthentication(auth);
                 }
-            } catch (Exception ignored) {
-                // invalid/expired token → leave context unauthenticated
+            } catch (Exception ex) {
+                log.warn("JWT rejected for {}: {} ({})", request.getRequestURI(),
+                        ex.getClass().getSimpleName(), ex.getMessage());
+                SecurityContextHolder.clearContext();
             }
         }
         chain.doFilter(request, response);

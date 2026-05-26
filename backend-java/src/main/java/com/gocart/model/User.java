@@ -29,6 +29,13 @@ public class User {
 
     private String image;
 
+    private String phone;
+
+    @Column(columnDefinition = "text")
+    private String bio;
+
+    private String address;
+
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
     

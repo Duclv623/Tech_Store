@@ -1,23 +1,40 @@
 import { PlusIcon, SquarePenIcon, XIcon } from 'lucide-react';
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import AddressModal from './AddressModal';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
+import { fetchAddresses } from '@/lib/features/address/addressSlice';
+import { clearCart } from '@/lib/features/cart/cartSlice';
+import { ordersAPI } from '@/lib/api';
 
 const OrderSummary = ({ totalPrice, items }) => {
 
     const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || '$';
 
     const router = useRouter();
+    const dispatch = useDispatch();
 
     const addressList = useSelector(state => state.address.list);
+    const user = useSelector(state => state.auth.user);
 
     const [paymentMethod, setPaymentMethod] = useState('COD');
     const [selectedAddress, setSelectedAddress] = useState(null);
     const [showAddressModal, setShowAddressModal] = useState(false);
     const [couponCodeInput, setCouponCodeInput] = useState('');
     const [coupon, setCoupon] = useState('');
+
+    useEffect(() => {
+        if (user?.id) {
+            dispatch(fetchAddresses(user.id));
+        }
+    }, [dispatch, user?.id]);
+
+    useEffect(() => {
+        if (!selectedAddress && addressList.length > 0) {
+            setSelectedAddress(addressList[0]);
+        }
+    }, [addressList, selectedAddress]);
 
     const handleCouponCode = async (event) => {
         event.preventDefault();
@@ -26,8 +43,32 @@ const OrderSummary = ({ totalPrice, items }) => {
 
     const handlePlaceOrder = async (e) => {
         e.preventDefault();
-
-        router.push('/orders')
+        if (!user?.id) {
+            toast.error('Vui lòng đăng nhập trước');
+            return;
+        }
+        if (!selectedAddress?.id) {
+            toast.error('Vui lòng chọn địa chỉ giao hàng');
+            return;
+        }
+        if (!items || items.length === 0) {
+            toast.error('Giỏ hàng trống');
+            return;
+        }
+        try {
+            await ordersAPI.place({
+                addressId: selectedAddress.id,
+                paymentMethod,
+                couponCode: coupon?.code || null,
+                items: items.map(it => ({ productId: it.id, quantity: it.quantity })),
+            });
+            dispatch(clearCart());
+            toast.success('Đặt hàng thành công');
+            router.push('/orders');
+        } catch (err) {
+            toast.error(err.message || 'Đặt hàng thất bại');
+            throw err;
+        }
     }
 
     return (

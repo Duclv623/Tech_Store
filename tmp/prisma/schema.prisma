@@ -15,6 +15,10 @@ model User {
     id    String @id
     name  String
     email String
+    phone String 
+    bio String 
+    address String
+    updatedAt String
     image String
     cart  Json   @default("{}")
 

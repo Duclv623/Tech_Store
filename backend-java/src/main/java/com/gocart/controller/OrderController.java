@@ -1,11 +1,14 @@
 package com.gocart.controller;
 
+import com.gocart.dto.CreateOrderRequest;
+import com.gocart.dto.OrderResponse;
 import com.gocart.model.Order;
 import com.gocart.model.OrderStatus;
 import com.gocart.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,33 +20,55 @@ import java.util.List;
 public class OrderController {
     private final OrderService orderService;
 
+    @GetMapping("/me")
+    public ResponseEntity<?> getMyOrders(Authentication auth) {
+        if (auth == null || auth.getName() == null) {
+            return ResponseEntity.status(401).body("Unauthorized");
+        }
+        List<OrderResponse> list = orderService.getOrdersByUser(auth.getName())
+                .stream().map(OrderResponse::from).toList();
+        return ResponseEntity.ok(list);
+    }
+
+    @PostMapping("/place")
+    public ResponseEntity<?> placeOrder(@RequestBody CreateOrderRequest req, Authentication auth) {
+        if (auth == null || auth.getName() == null) {
+            return ResponseEntity.status(401).body("Unauthorized");
+        }
+        List<OrderResponse> created = orderService.placeOrder(auth.getName(), req)
+                .stream().map(OrderResponse::from).toList();
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
     @GetMapping
-    public ResponseEntity<List<Order>> getAllOrders() {
-        return ResponseEntity.ok(orderService.getAllOrders());
+    public ResponseEntity<List<OrderResponse>> getAllOrders() {
+        return ResponseEntity.ok(orderService.getAllOrders().stream().map(OrderResponse::from).toList());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Order> getOrderById(@PathVariable String id) {
+    public ResponseEntity<OrderResponse> getOrderById(@PathVariable String id) {
         return orderService.getOrderById(id)
+                .map(OrderResponse::from)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Order>> getOrdersByUser(@PathVariable String userId) {
-        return ResponseEntity.ok(orderService.getOrdersByUser(userId));
+    public ResponseEntity<List<OrderResponse>> getOrdersByUser(@PathVariable String userId) {
+        return ResponseEntity.ok(orderService.getOrdersByUser(userId).stream().map(OrderResponse::from).toList());
     }
 
     @GetMapping("/store/{storeId}")
-    public ResponseEntity<List<Order>> getOrdersByStore(@PathVariable String storeId) {
-        return ResponseEntity.ok(orderService.getOrdersByStore(storeId));
+    public ResponseEntity<List<OrderResponse>> getOrdersByStore(@PathVariable String storeId) {
+        return ResponseEntity.ok(orderService.getOrdersByStore(storeId).stream().map(OrderResponse::from).toList());
     }
 
     @GetMapping("/store/{storeId}/status/{status}")
-    public ResponseEntity<List<Order>> getOrdersByStoreAndStatus(
+    public ResponseEntity<List<OrderResponse>> getOrdersByStoreAndStatus(
             @PathVariable String storeId,
             @PathVariable OrderStatus status) {
-        return ResponseEntity.ok(orderService.getOrdersByStoreAndStatus(storeId, status));
+        return ResponseEntity.ok(orderService.getOrdersByStoreAndStatus(storeId, status)
+                .stream().map(OrderResponse::from).toList());
     }
 
     @PostMapping
@@ -53,11 +78,11 @@ public class OrderController {
     }
 
     @PatchMapping("/{id}/status")
-    public ResponseEntity<Order> updateOrderStatus(
+    public ResponseEntity<OrderResponse> updateOrderStatus(
             @PathVariable String id,
             @RequestBody OrderStatus status) {
         try {
-            return ResponseEntity.ok(orderService.updateOrderStatus(id, status));
+            return ResponseEntity.ok(OrderResponse.from(orderService.updateOrderStatus(id, status)));
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }
@@ -69,4 +94,3 @@ public class OrderController {
         return ResponseEntity.noContent().build();
     }
 }
-

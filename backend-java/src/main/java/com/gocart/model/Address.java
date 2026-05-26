@@ -1,5 +1,7 @@
 package com.gocart.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,6 +16,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "orders"})
 public class Address {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -31,6 +34,7 @@ public class Address {
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "userId", insertable = false, updatable = false)
+    @JsonIgnore
     private User user;
     
     @OneToMany(mappedBy = "address", cascade = CascadeType.ALL)

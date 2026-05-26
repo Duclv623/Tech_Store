@@ -15,7 +15,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "products", "orders"})
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "products", "orders", "user"})
 public class Store {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
