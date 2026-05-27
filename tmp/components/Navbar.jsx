@@ -16,7 +16,7 @@ const Navbar = () => {
 
     const navLinkClass = (href) => {
         const isActive = href === '/' ? pathname === '/' : pathname.startsWith(href);
-        return `relative pb-1 transition hover:text-indigo-600 ${
+        return `relative inline-block pb-1 transition-all duration-200 hover:-translate-y-0.5 hover:text-indigo-600 ${
             isActive
                 ? "text-indigo-600 font-medium after:content-[''] after:absolute after:left-0 after:right-0 after:-bottom-0.5 after:h-0.5 after:bg-indigo-600 after:rounded-full"
                 : "text-slate-600"
