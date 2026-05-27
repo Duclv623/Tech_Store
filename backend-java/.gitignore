@@ -1,0 +1,19 @@
+# Environment
+.env
+.env.*.local
+
+# Maven build
+target/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+nbproject/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

@@ -22,6 +22,8 @@
 @REM
 @IF "%{env:MAVEN_BATCH_PAUSE}" == "on" pause
 
+@echo off
+
 setlocal
 
 set DIRNAME=%~dp0
