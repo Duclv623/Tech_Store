@@ -53,6 +53,11 @@ public class OrderController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/{id}/history")
+    public ResponseEntity<?> getOrderHistory(@PathVariable String id) {
+        return ResponseEntity.ok(orderService.getOrderHistory(id));
+    }
+
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<OrderResponse>> getOrdersByUser(@PathVariable String userId) {
         return ResponseEntity.ok(orderService.getOrdersByUser(userId).stream().map(OrderResponse::from).toList());

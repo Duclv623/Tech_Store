@@ -4,8 +4,10 @@ import com.gocart.dto.CreateOrderRequest;
 import com.gocart.model.Order;
 import com.gocart.model.OrderItem;
 import com.gocart.model.OrderStatus;
+import com.gocart.model.OrderStatusHistory;
 import com.gocart.model.Product;
 import com.gocart.repository.OrderRepository;
+import com.gocart.repository.OrderStatusHistoryRepository;
 import com.gocart.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,6 +27,21 @@ import java.util.Optional;
 public class OrderService {
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
+    private final OrderStatusHistoryRepository historyRepository;
+
+    private void logHistory(String orderId, OrderStatus newStatus, OrderStatus previous, String changedBy, String note) {
+        OrderStatusHistory h = new OrderStatusHistory();
+        h.setOrderId(orderId);
+        h.setStatus(newStatus);
+        h.setPreviousStatus(previous);
+        h.setChangedByUserId(changedBy);
+        h.setNote(note);
+        historyRepository.save(h);
+    }
+
+    public List<OrderStatusHistory> getOrderHistory(String orderId) {
+        return historyRepository.findByOrderIdOrderByCreatedAtAsc(orderId);
+    }
 
     public List<Order> getAllOrders() {
         return orderRepository.findAll();
@@ -100,7 +117,10 @@ public class OrderService {
                 oi.setOrder(saved);
                 saved.getOrderItems().add(oi);
             }
-            created.add(orderRepository.save(saved));
+            Order persisted = orderRepository.save(saved);
+            // Log history: trạng thái khởi tạo
+            logHistory(persisted.getId(), OrderStatus.ORDER_PLACED, null, userId, "Đơn hàng được tạo");
+            created.add(persisted);
         }
         return created;
     }
@@ -108,12 +128,18 @@ public class OrderService {
     public Order updateOrderStatus(String id, OrderStatus status) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
+        OrderStatus previous = order.getStatus();
         order.setStatus(status);
         // COD: khi đơn được đánh dấu DELIVERED → coi như đã nhận tiền
         if (status == OrderStatus.DELIVERED && Boolean.FALSE.equals(order.getIsPaid())) {
             order.setIsPaid(true);
         }
-        return orderRepository.save(order);
+        Order saved = orderRepository.save(order);
+        // Log history nếu status thực sự đổi
+        if (previous != status) {
+            logHistory(saved.getId(), status, previous, null, null);
+        }
+        return saved;
     }
 
     public Order updatePaymentStatus(String id, boolean isPaid) {

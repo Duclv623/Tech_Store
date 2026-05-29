@@ -33,7 +33,7 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(req.getPassword()));
         userRepository.save(user);
 
-        String token = jwtService.generateToken(user.getId(), user.getEmail());
+        String token = jwtService.generateToken(user.getId(), user.getEmail(), user.getRole().name());
         return new AuthResponse(token, UserProfileResponse.from(user));
     }
 
@@ -45,7 +45,7 @@ public class AuthService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
         }
 
-        String token = jwtService.generateToken(user.getId(), user.getEmail());
+        String token = jwtService.generateToken(user.getId(), user.getEmail(), user.getRole().name());
         return new AuthResponse(token, UserProfileResponse.from(user));
     }
 }
