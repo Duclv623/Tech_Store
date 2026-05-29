@@ -1,5 +1,6 @@
 package com.gocart.controller;
 
+import com.gocart.dto.OrderResponse;
 import com.gocart.model.Order;
 import com.gocart.model.OrderStatus;
 import com.gocart.repository.OrderRepository;
@@ -50,8 +51,10 @@ public class AdminController {
                 .sum();
         stats.put("revenue", totalRevenue);
         
-        // Tất cả orders (để vẽ chart)
-        List<Order> allOrders = orderRepository.findAll();
+        // Tất cả orders (để vẽ chart) — map sang DTO để tránh recursion
+        List<OrderResponse> allOrders = orderRepository.findAll().stream()
+                .map(OrderResponse::from)
+                .toList();
         stats.put("allOrders", allOrders);
         
         return ResponseEntity.ok(stats);
