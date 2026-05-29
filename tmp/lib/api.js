@@ -154,6 +154,7 @@ export const storesAPI = {
     getById: (id) => apiCall(`/stores/${id}`),
     getByUsername: (username) => apiCall(`/stores/username/${username}`),
     getByUserId: (userId) => apiCall(`/stores/user/${userId}`),
+    getMyDashboard: () => apiCall('/stores/me/dashboard'),
     getActive: () => apiCall('/stores/active'),
     getByStatus: (status) => apiCall(`/stores/status/${status}`),
     create: (store) => apiCall('/stores', {

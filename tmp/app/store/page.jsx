@@ -1,10 +1,11 @@
 'use client'
-import { dummyStoreDashboardData } from "@/assets/assets"
 import Loading from "@/components/Loading"
+import { storesAPI } from "@/lib/api"
 import { CircleDollarSignIcon, ShoppingBasketIcon, StarIcon, TagsIcon } from "lucide-react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
+import toast from "react-hot-toast"
 
 export default function Dashboard() {
 
@@ -22,14 +23,25 @@ export default function Dashboard() {
 
     const dashboardCardsData = [
         { title: 'Tổng sản phẩm', value: dashboardData.totalProducts, icon: ShoppingBasketIcon },
-        { title: 'Tổng doanh thu', value: currency + dashboardData.totalEarnings, icon: CircleDollarSignIcon },
+        { title: 'Tổng doanh thu', value: currency + (dashboardData.totalEarnings || 0).toLocaleString(), icon: CircleDollarSignIcon },
         { title: 'Tổng đơn hàng', value: dashboardData.totalOrders, icon: TagsIcon },
         { title: 'Tổng đánh giá', value: dashboardData.ratings.length, icon: StarIcon },
     ]
 
     const fetchDashboardData = async () => {
-        setDashboardData(dummyStoreDashboardData)
-        setLoading(false)
+        try {
+            const data = await storesAPI.getMyDashboard()
+            setDashboardData({
+                totalProducts: data.totalProducts || 0,
+                totalEarnings: data.totalEarnings || 0,
+                totalOrders: data.totalOrders || 0,
+                ratings: data.ratings || [],
+            })
+        } catch (err) {
+            toast.error(err.message || 'Không tải được dashboard')
+        } finally {
+            setLoading(false)
+        }
     }
 
     useEffect(() => {
@@ -64,9 +76,15 @@ export default function Dashboard() {
                         <div key={index} className="flex max-sm:flex-col gap-5 sm:items-center justify-between py-6 border-b border-slate-200 text-sm text-slate-600 max-w-4xl">
                             <div>
                                 <div className="flex gap-3">
-                                    <Image src={review.user.image} alt="" className="w-10 aspect-square rounded-full" width={100} height={100} />
+                                    {review.user?.image ? (
+                                        <Image src={review.user.image} alt="" className="w-10 aspect-square rounded-full" width={100} height={100} />
+                                    ) : (
+                                        <div className="w-10 aspect-square rounded-full bg-slate-200 flex items-center justify-center text-slate-500 text-xs font-medium">
+                                            {review.user?.name?.[0]?.toUpperCase() || '?'}
+                                        </div>
+                                    )}
                                     <div>
-                                        <p className="font-medium">{review.user.name}</p>
+                                        <p className="font-medium">{review.user?.name || 'Khách hàng'}</p>
                                         <p className="font-light text-slate-500">{new Date(review.createdAt).toDateString()}</p>
                                     </div>
                                 </div>

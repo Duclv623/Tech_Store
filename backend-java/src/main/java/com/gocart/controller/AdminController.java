@@ -1,6 +1,7 @@
 package com.gocart.controller;
 
 import com.gocart.model.Order;
+import com.gocart.model.OrderStatus;
 import com.gocart.repository.OrderRepository;
 import com.gocart.repository.ProductRepository;
 import com.gocart.repository.StoreRepository;
@@ -41,9 +42,10 @@ public class AdminController {
         long totalOrders = orderRepository.count();
         stats.put("orders", totalOrders);
         
-        // Tổng revenue (tổng total của tất cả orders đã thanh toán)
+        // Tổng revenue: chỉ tính đơn đã thanh toán VÀ chưa bị hủy
         List<Order> paidOrders = orderRepository.findByIsPaidTrue();
         double totalRevenue = paidOrders.stream()
+                .filter(o -> o.getStatus() != OrderStatus.CANCELLED)
                 .mapToDouble(order -> order.getTotal() != null ? order.getTotal() : 0.0)
                 .sum();
         stats.put("revenue", totalRevenue);

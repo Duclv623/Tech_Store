@@ -1,13 +1,24 @@
 package com.gocart.controller;
 
+import com.gocart.model.Order;
+import com.gocart.model.OrderStatus;
+import com.gocart.model.Rating;
 import com.gocart.model.Store;
+import com.gocart.model.User;
+import com.gocart.repository.OrderRepository;
+import com.gocart.repository.ProductRepository;
+import com.gocart.repository.RatingRepository;
+import com.gocart.repository.UserRepository;
 import com.gocart.service.StoreService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/stores")
@@ -15,6 +26,10 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 public class StoreController {
     private final StoreService storeService;
+    private final ProductRepository productRepository;
+    private final OrderRepository orderRepository;
+    private final RatingRepository ratingRepository;
+    private final UserRepository userRepository;
 
     @GetMapping
     public ResponseEntity<List<Store>> getAllStores() {
@@ -50,6 +65,64 @@ public class StoreController {
         return storeService.getStoreByUserId(userId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Dashboard cho seller — tổng hợp số liệu của cửa hàng đang đăng nhập.
+     * GET /api/stores/me/dashboard
+     */
+    @GetMapping("/me/dashboard")
+    public ResponseEntity<?> getMyStoreDashboard(Authentication auth) {
+        if (auth == null || auth.getName() == null) {
+            return ResponseEntity.status(401).body("Unauthorized");
+        }
+        Store store = storeService.getStoreByUserId(auth.getName()).orElse(null);
+        if (store == null) {
+            return ResponseEntity.status(404).body("Bạn chưa có cửa hàng");
+        }
+
+        long totalProducts = productRepository.findByStoreId(store.getId()).size();
+        List<Order> orders = orderRepository.findByStoreId(store.getId());
+        long totalOrders = orders.size();
+
+        double totalEarnings = orders.stream()
+                .filter(o -> Boolean.TRUE.equals(o.getIsPaid()) && o.getStatus() != OrderStatus.CANCELLED)
+                .mapToDouble(o -> o.getTotal() != null ? o.getTotal() : 0.0)
+                .sum();
+
+        List<Rating> ratings = ratingRepository.findByStoreId(store.getId());
+
+        // Map ratings → DTO bao gồm user.name/image (vì Rating.user bị @JsonIgnore)
+        List<Map<String, Object>> ratingDtos = ratings.stream().map(r -> {
+            Map<String, Object> m = new HashMap<>();
+            m.put("id", r.getId());
+            m.put("rating", r.getRating());
+            m.put("review", r.getReview());
+            m.put("createdAt", r.getCreatedAt());
+            if (r.getProduct() != null) {
+                Map<String, Object> p = new HashMap<>();
+                p.put("id", r.getProduct().getId());
+                p.put("name", r.getProduct().getName());
+                p.put("category", r.getProduct().getCategory());
+                p.put("images", r.getProduct().getImages());
+                m.put("product", p);
+            }
+            User u = userRepository.findById(r.getUserId()).orElse(null);
+            Map<String, Object> userInfo = new HashMap<>();
+            userInfo.put("name", u != null ? u.getName() : "Khách hàng");
+            userInfo.put("image", u != null ? u.getImage() : null);
+            m.put("user", userInfo);
+            return m;
+        }).toList();
+
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("storeId", store.getId());
+        resp.put("storeName", store.getName());
+        resp.put("totalProducts", totalProducts);
+        resp.put("totalOrders", totalOrders);
+        resp.put("totalEarnings", totalEarnings);
+        resp.put("ratings", ratingDtos);
+        return ResponseEntity.ok(resp);
     }
 
     @PostMapping
