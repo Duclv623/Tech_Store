@@ -88,6 +88,18 @@ public class OrderController {
         }
     }
 
+    @PatchMapping("/{id}/paid")
+    public ResponseEntity<OrderResponse> updatePaymentStatus(
+            @PathVariable String id,
+            @RequestBody Boolean isPaid) {
+        try {
+            return ResponseEntity.ok(OrderResponse.from(
+                    orderService.updatePaymentStatus(id, Boolean.TRUE.equals(isPaid))));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteOrder(@PathVariable String id) {
         orderService.deleteOrder(id);

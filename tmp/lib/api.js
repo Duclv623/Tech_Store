@@ -116,6 +116,10 @@ export const ordersAPI = {
         method: 'PATCH',
         body: JSON.stringify(status),
     }),
+    updatePaid: (id, isPaid) => apiCall(`/orders/${id}/paid`, {
+        method: 'PATCH',
+        body: JSON.stringify(isPaid),
+    }),
     delete: (id) => apiCall(`/orders/${id}`, {
         method: 'DELETE',
     }),

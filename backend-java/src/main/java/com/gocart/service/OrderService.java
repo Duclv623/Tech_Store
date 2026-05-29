@@ -109,6 +109,17 @@ public class OrderService {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
         order.setStatus(status);
+        // COD: khi đơn được đánh dấu DELIVERED → coi như đã nhận tiền
+        if (status == OrderStatus.DELIVERED && Boolean.FALSE.equals(order.getIsPaid())) {
+            order.setIsPaid(true);
+        }
+        return orderRepository.save(order);
+    }
+
+    public Order updatePaymentStatus(String id, boolean isPaid) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+        order.setIsPaid(isPaid);
         return orderRepository.save(order);
     }
 
