@@ -3,6 +3,7 @@ package com.gocart.service;
 import com.gocart.dto.AuthResponse;
 import com.gocart.dto.LoginRequest;
 import com.gocart.dto.RegisterRequest;
+import com.gocart.dto.UserProfileResponse;
 import com.gocart.model.User;
 import com.gocart.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +34,7 @@ public class AuthService {
         userRepository.save(user);
 
         String token = jwtService.generateToken(user.getId(), user.getEmail());
-        return new AuthResponse(token, user);
+        return new AuthResponse(token, UserProfileResponse.from(user));
     }
 
     public AuthResponse login(LoginRequest req) {
@@ -45,6 +46,6 @@ public class AuthService {
         }
 
         String token = jwtService.generateToken(user.getId(), user.getEmail());
-        return new AuthResponse(token, user);
+        return new AuthResponse(token, UserProfileResponse.from(user));
     }
 }
