@@ -31,7 +31,18 @@ export default function AdminOrders() {
     const [orders, setOrders] = useState([])
     const [loading, setLoading] = useState(true)
     const [selectedOrder, setSelectedOrder] = useState(null)
+    const [history, setHistory] = useState([])
     const [filter, setFilter] = useState('ALL')
+
+    useEffect(() => {
+        if (!selectedOrder) {
+            setHistory([])
+            return
+        }
+        ordersAPI.getHistory(selectedOrder.id)
+            .then(data => setHistory(Array.isArray(data) ? data : []))
+            .catch(() => setHistory([]))
+    }, [selectedOrder?.id])
 
     const fetchOrders = async () => {
         try {
@@ -48,7 +59,11 @@ export default function AdminOrders() {
         try {
             const updated = await ordersAPI.updateStatus(orderId, status)
             setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: updated.status, isPaid: updated.isPaid } : o))
-            if (selectedOrder?.id === orderId) setSelectedOrder({ ...selectedOrder, status: updated.status, isPaid: updated.isPaid })
+            if (selectedOrder?.id === orderId) {
+                setSelectedOrder({ ...selectedOrder, status: updated.status, isPaid: updated.isPaid })
+                const newHistory = await ordersAPI.getHistory(orderId).catch(() => [])
+                setHistory(Array.isArray(newHistory) ? newHistory : [])
+            }
             toast.success('Đã cập nhật trạng thái')
         } catch (err) {
             toast.error(err.message || 'Cập nhật thất bại')
@@ -237,6 +252,31 @@ export default function AdminOrders() {
                                     Tổng: {currency}{selectedOrder.total?.toLocaleString()}
                                 </p>
                             </div>
+
+                            {/* Status history */}
+                            {history.length > 0 && (
+                                <div className="border-t border-slate-200 pt-4">
+                                    <p className="text-slate-400 mb-2">Lịch sử trạng thái</p>
+                                    <ol className="relative border-l border-slate-200 ml-2 space-y-3">
+                                        {history.map((h, idx) => (
+                                            <li key={h.id || idx} className="ml-4">
+                                                <span className={`absolute -left-1.5 size-3 rounded-full ${idx === history.length - 1 ? 'bg-indigo-500' : 'bg-slate-300'}`} />
+                                                <p className="text-sm">
+                                                    {h.previousStatus && (
+                                                        <span className="text-slate-400">{statusLabel(h.previousStatus)} → </span>
+                                                    )}
+                                                    <span className="font-medium text-slate-700">{statusLabel(h.status)}</span>
+                                                </p>
+                                                <p className="text-xs text-slate-400">
+                                                    {new Date(h.createdAt).toLocaleString('vi-VN')}
+                                                    {h.changedByUserId && ` · bởi ${h.changedByUserId.slice(0, 8)}…`}
+                                                </p>
+                                                {h.note && <p className="text-xs text-slate-500 italic mt-0.5">{h.note}</p>}
+                                            </li>
+                                        ))}
+                                    </ol>
+                                </div>
+                            )}
 
                             {/* Status update */}
                             <div className="border-t border-slate-200 pt-4">

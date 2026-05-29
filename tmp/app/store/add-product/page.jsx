@@ -1,13 +1,13 @@
 'use client'
 import { assets } from "@/assets/assets"
+import { categoriesAPI } from "@/lib/api"
 import Image from "next/image"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { toast } from "react-hot-toast"
 
 export default function StoreAddProduct() {
 
-    const categories = ['Electronics', 'Clothing', 'Home & Kitchen', 'Beauty & Health', 'Toys & Games', 'Sports & Outdoors', 'Books & Media', 'Food & Drink', 'Hobbies & Crafts', 'Others']
-
+    const [categories, setCategories] = useState([])
     const [images, setImages] = useState({ 1: null, 2: null, 3: null, 4: null })
     const [productInfo, setProductInfo] = useState({
         name: "",
@@ -17,6 +17,12 @@ export default function StoreAddProduct() {
         category: "",
     })
     const [loading, setLoading] = useState(false)
+
+    useEffect(() => {
+        categoriesAPI.getAll()
+            .then(data => setCategories(Array.isArray(data) ? data : []))
+            .catch(() => {})
+    }, [])
 
 
     const onChangeHandler = (e) => {
@@ -67,8 +73,8 @@ export default function StoreAddProduct() {
 
             <select onChange={e => setProductInfo({ ...productInfo, category: e.target.value })} value={productInfo.category} className="w-full max-w-sm p-2 px-4 my-6 outline-none border border-slate-200 rounded" required>
                 <option value="">Chọn danh mục</option>
-                {categories.map((category) => (
-                    <option key={category} value={category}>{category}</option>
+                {categories.map((cat) => (
+                    <option key={cat.id} value={cat.name}>{cat.name}</option>
                 ))}
             </select>
 

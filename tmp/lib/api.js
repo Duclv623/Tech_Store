@@ -101,6 +101,7 @@ export const ordersAPI = {
     getAll: () => apiCall('/orders'),
     getMine: () => apiCall('/orders/me'),
     getById: (id) => apiCall(`/orders/${id}`),
+    getHistory: (id) => apiCall(`/orders/${id}/history`),
     getByUser: (userId) => apiCall(`/orders/user/${userId}`),
     getByStore: (storeId) => apiCall(`/orders/store/${storeId}`),
     getByStoreAndStatus: (storeId, status) => apiCall(`/orders/store/${storeId}/status/${status}`),
@@ -195,6 +196,24 @@ export const addressesAPI = {
         body: JSON.stringify(address),
     }),
     delete: (id) => apiCall(`/addresses/${id}`, {
+        method: 'DELETE',
+    }),
+};
+
+// Categories API
+export const categoriesAPI = {
+    getAll: () => apiCall('/categories'),
+    getById: (id) => apiCall(`/categories/${id}`),
+    getBySlug: (slug) => apiCall(`/categories/slug/${slug}`),
+    create: (category) => apiCall('/categories', {
+        method: 'POST',
+        body: JSON.stringify(category),
+    }),
+    update: (id, category) => apiCall(`/categories/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(category),
+    }),
+    delete: (id) => apiCall(`/categories/${id}`, {
         method: 'DELETE',
     }),
 };

@@ -1,10 +1,10 @@
 'use client'
-import { Suspense, useMemo, useState } from "react"
+import { Suspense, useEffect, useMemo, useState } from "react"
 import ProductCard from "@/components/ProductCard"
 import { MoveLeftIcon, SlidersHorizontalIcon } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useSelector } from "react-redux"
-import { categories } from "@/assets/assets"
+import { categoriesAPI } from "@/lib/api"
 
 const categoryLabels = {
     Laptop: 'Laptop',
@@ -22,9 +22,16 @@ function ShopContent() {
 
     const products = useSelector(state => state.product.list)
 
+    const [categories, setCategories] = useState([])
     const [selectedCategories, setSelectedCategories] = useState([])
     const [priceRange, setPriceRange] = useState({ min: '', max: '' })
     const [showFiltersMobile, setShowFiltersMobile] = useState(false)
+
+    useEffect(() => {
+        categoriesAPI.getAll()
+            .then(data => setCategories(Array.isArray(data) ? data : []))
+            .catch(() => {})
+    }, [])
 
     const toggleCategory = (cat) => {
         setSelectedCategories(prev =>
@@ -66,14 +73,14 @@ function ShopContent() {
                 <h3 className="text-sm font-medium text-slate-600 mb-3">Danh mục</h3>
                 <div className="space-y-2">
                     {categories.map(cat => (
-                        <label key={cat} className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer hover:text-indigo-600 transition">
+                        <label key={cat.id} className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer hover:text-indigo-600 transition">
                             <input
                                 type="checkbox"
-                                checked={selectedCategories.includes(cat)}
-                                onChange={() => toggleCategory(cat)}
+                                checked={selectedCategories.includes(cat.name)}
+                                onChange={() => toggleCategory(cat.name)}
                                 className="accent-indigo-500"
                             />
-                            {categoryLabels[cat] || cat}
+                            {categoryLabels[cat.name] || cat.name}
                         </label>
                     ))}
                 </div>
