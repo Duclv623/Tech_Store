@@ -11,26 +11,33 @@
 --  Mật khẩu admin (betacomagency@gmail.com)  : admin123
 -- ============================================================
 
--- 0) DỌN DỮ LIỆU CŨ (KHÔNG XOÁ SCHEMA)
+-- 0) DROP CHECK CONSTRAINTS CŨ (do enum đã thêm CANCELLED nhưng DB còn constraint cũ)
+ALTER TABLE "order"              DROP CONSTRAINT IF EXISTS order_status_check;
+ALTER TABLE "order"              DROP CONSTRAINT IF EXISTS order_payment_method_check;
+ALTER TABLE order_status_history DROP CONSTRAINT IF EXISTS order_status_history_status_check;
+ALTER TABLE order_status_history DROP CONSTRAINT IF EXISTS order_status_history_previous_status_check;
+ALTER TABLE "user"               DROP CONSTRAINT IF EXISTS user_role_check;
+
+-- 0.1) DỌN DỮ LIỆU CŨ (KHÔNG XOÁ SCHEMA)
 TRUNCATE
     order_status_history,
     rating,
     order_item,
-    "Order",
+    "order",
     product_images,
     product,
     category,
     address,
     store,
     coupon,
-    "User"
+    "user"
 RESTART IDENTITY CASCADE;
 
 
 -- ============================================================
 -- 1) USERS (5: 1 admin + 2 seller + 2 buyer)
 -- ============================================================
-INSERT INTO "User" (id, name, email, image, phone, bio, address, password, role, cart) VALUES
+INSERT INTO "user" (id, name, email, image, phone, bio, address, password, role, cart) VALUES
 ('user-admin-001',
  'Admin Lê Văn Đức',
  'betacomagency@gmail.com',
@@ -215,7 +222,7 @@ INSERT INTO coupon (code, description, discount, for_new_user, for_member, is_pu
 -- ============================================================
 -- 8) ORDERS (5 đơn — đủ các trạng thái)
 -- ============================================================
-INSERT INTO "Order" (id, total, status, user_id, store_id, address_id, is_paid, payment_method, is_coupon_used, coupon, created_at, updated_at) VALUES
+INSERT INTO "order" (id, total, status, user_id, store_id, address_id, is_paid, payment_method, is_coupon_used, coupon, created_at, updated_at) VALUES
 -- Đơn 1: An mua MacBook + AirPods, đã giao + đã thanh toán
 ('order-001', 34280000, 'DELIVERED', 'user-buyer-001', 'store-001', 'addr-001', true,  'COD',    false, '{}'::jsonb, NOW() - INTERVAL '15 days', NOW() - INTERVAL '10 days'),
 
@@ -299,14 +306,14 @@ INSERT INTO rating (id, rating, review, user_id, product_id, order_id, created_a
 -- ============================================================
 -- KIỂM TRA SAU KHI INSERT
 -- ============================================================
-SELECT 'Users'                AS tbl, COUNT(*) FROM "User"                  UNION ALL
+SELECT 'Users'                AS tbl, COUNT(*) FROM "user"                  UNION ALL
 SELECT 'Categories'           , COUNT(*) FROM category                       UNION ALL
 SELECT 'Stores'               , COUNT(*) FROM store                          UNION ALL
 SELECT 'Products'             , COUNT(*) FROM product                        UNION ALL
 SELECT 'Product Images'       , COUNT(*) FROM product_images                 UNION ALL
 SELECT 'Addresses'            , COUNT(*) FROM address                        UNION ALL
 SELECT 'Coupons'              , COUNT(*) FROM coupon                         UNION ALL
-SELECT 'Orders'               , COUNT(*) FROM "Order"                        UNION ALL
+SELECT 'Orders'               , COUNT(*) FROM "order"                        UNION ALL
 SELECT 'Order Items'          , COUNT(*) FROM order_item                     UNION ALL
 SELECT 'Order Status History' , COUNT(*) FROM order_status_history           UNION ALL
 SELECT 'Ratings'              , COUNT(*) FROM rating;
