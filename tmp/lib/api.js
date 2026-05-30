@@ -218,6 +218,19 @@ export const categoriesAPI = {
     }),
 };
 
+// Ratings API
+export const ratingsAPI = {
+    getByProduct: (productId) => apiCall(`/ratings/product/${productId}`),
+    getByUser: (userId) => apiCall(`/ratings/user/${userId}`),
+    create: (rating) => apiCall('/ratings', {
+        method: 'POST',
+        body: JSON.stringify(rating),
+    }),
+    delete: (id) => apiCall(`/ratings/${id}`, {
+        method: 'DELETE',
+    }),
+};
+
 // Coupons API
 export const couponsAPI = {
     getAll: () => apiCall('/coupons'),

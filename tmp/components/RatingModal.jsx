@@ -4,20 +4,35 @@ import { Star } from 'lucide-react';
 import React, { useState } from 'react'
 import { XIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useDispatch } from 'react-redux';
+import { ratingsAPI, authStorage } from '@/lib/api';
+import { addRating } from '@/lib/features/rating/ratingSlice';
 
 const RatingModal = ({ ratingModal, setRatingModal }) => {
 
+    const dispatch = useDispatch();
     const [rating, setRating] = useState(0);
     const [review, setReview] = useState('');
 
     const handleSubmit = async () => {
-        if (rating < 0 || rating > 5) {
-            return toast('Vui lòng chọn số sao đánh giá');
-        }
-        if (review.length < 5) {
-            return toast('Vui lòng viết một nhận xét ngắn');
+        if (rating < 1 || rating > 5) {
+            throw new Error('Vui lòng chọn số sao đánh giá');
         }
 
+        const user = authStorage.getUser();
+        if (!user?.id) {
+            throw new Error('Vui lòng đăng nhập để đánh giá');
+        }
+
+        const saved = await ratingsAPI.create({
+            rating,
+            review,
+            userId: user.id,
+            productId: ratingModal.productId,
+            orderId: ratingModal.orderId,
+        });
+
+        dispatch(addRating(saved));
         setRatingModal(null);
     }
 
@@ -44,7 +59,11 @@ const RatingModal = ({ ratingModal, setRatingModal }) => {
                     value={review}
                     onChange={(e) => setReview(e.target.value)}
                 ></textarea>
-                <button onClick={e => toast.promise(handleSubmit(), { loading: 'Đang gửi...' })} className='w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-600 transition'>
+                <button onClick={e => toast.promise(handleSubmit(), {
+                    loading: 'Đang gửi...',
+                    success: 'Đã gửi đánh giá',
+                    error: (err) => err?.message || 'Gửi đánh giá thất bại',
+                })} className='w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-600 transition'>
                     Gửi đánh giá
                 </button>
             </div>

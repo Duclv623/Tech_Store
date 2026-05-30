@@ -7,12 +7,23 @@ const ratingSlice = createSlice({
         ratings: [],
     },
     reducers: {
+        setRatings: (state, action) => {
+            state.ratings = action.payload || []
+        },
         addRating: (state, action) => {
-            state.ratings.push(action.payload)
+            const incoming = action.payload
+            const idx = state.ratings.findIndex(
+                r => r.orderId === incoming.orderId && r.productId === incoming.productId
+            )
+            if (idx >= 0) {
+                state.ratings[idx] = incoming
+            } else {
+                state.ratings.push(incoming)
+            }
         },
     }
 })
 
-export const { addRating } = ratingSlice.actions
+export const { setRatings, addRating } = ratingSlice.actions
 
 export default ratingSlice.reducer

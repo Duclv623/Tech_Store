@@ -3,12 +3,15 @@ import PageTitle from "@/components/PageTitle"
 import { useEffect, useState } from "react";
 import OrderItem from "@/components/OrderItem";
 import { useRouter } from "next/navigation";
-import { ordersAPI, authStorage } from "@/lib/api";
+import { useDispatch } from "react-redux";
+import { ordersAPI, ratingsAPI, authStorage } from "@/lib/api";
+import { setRatings } from "@/lib/features/rating/ratingSlice";
 import toast from "react-hot-toast";
 
 export default function Orders() {
 
     const router = useRouter();
+    const dispatch = useDispatch();
 
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -23,7 +26,14 @@ export default function Orders() {
             .then(data => setOrders(Array.isArray(data) ? data : []))
             .catch(err => toast.error(err.message || 'Không tải được đơn hàng'))
             .finally(() => setLoading(false));
-    }, [router]);
+
+        const user = authStorage.getUser();
+        if (user?.id) {
+            ratingsAPI.getByUser(user.id)
+                .then(data => dispatch(setRatings(Array.isArray(data) ? data : [])))
+                .catch(() => { /* không chặn hiển thị đơn hàng nếu lỗi tải đánh giá */ });
+        }
+    }, [router, dispatch]);
 
     if (loading) {
         return (

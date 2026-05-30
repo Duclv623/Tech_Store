@@ -32,7 +32,7 @@ const ProductDescription = ({ product }) => {
                 <div className="flex flex-col gap-3 mt-14">
                     {product.rating && product.rating.length > 0 ? product.rating.map((item,index) => (
                         <div key={index} className="flex gap-5 mb-10">
-                            <Image src={item.user?.image || '/placeholder.png'} alt="" className="size-10 rounded-full" width={100} height={100} />
+                            <Image src={item.userImage || item.user?.image || '/placeholder.png'} alt="" className="size-10 rounded-full" width={100} height={100} />
                             <div>
                                 <div className="flex items-center" >
                                     {Array(5).fill('').map((_, index) => (
@@ -40,7 +40,7 @@ const ProductDescription = ({ product }) => {
                                     ))}
                                 </div>
                                 <p className="text-sm max-w-lg my-4">{item.review}</p>
-                                <p className="font-medium text-slate-800">{item.user?.name || 'Ẩn danh'}</p>
+                                <p className="font-medium text-slate-800">{item.userName || item.user?.name || 'Ẩn danh'}</p>
                                 <p className="mt-3 font-light">{item.createdAt ? new Date(item.createdAt).toDateString() : ''}</p>
                             </div>
                         </div>

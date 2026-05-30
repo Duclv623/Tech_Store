@@ -2,6 +2,7 @@ package com.gocart.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -38,6 +39,7 @@ public class Rating {
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "productId", insertable = false, updatable = false)
+    @JsonIgnore
     private Product product;
     
     @Column(nullable = false, updatable = false)
@@ -49,6 +51,18 @@ public class Rating {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+
+    @Transient
+    @JsonProperty("userName")
+    public String getUserName() {
+        return user != null ? user.getName() : null;
+    }
+
+    @Transient
+    @JsonProperty("userImage")
+    public String getUserImage() {
+        return user != null ? user.getImage() : null;
     }
 }
 
