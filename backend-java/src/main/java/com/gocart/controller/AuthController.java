@@ -47,4 +47,10 @@ public class AuthController {
         authService.resetPassword(req);
         return ResponseEntity.ok(Map.of("message", "Đặt lại mật khẩu thành công."));
     }
+
+    @PostMapping("/verify-email")
+    public ResponseEntity<Map<String, String>> verifyEmail(@RequestParam String token) {
+        authService.verifyEmail(token);
+        return ResponseEntity.ok(Map.of("message", "Xác minh tài khoản thành công. Bạn hiện có thể đăng nhập."));
+    }
 }

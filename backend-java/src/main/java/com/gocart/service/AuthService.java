@@ -6,8 +6,10 @@ import com.gocart.dto.LoginRequest;
 import com.gocart.dto.RegisterRequest;
 import com.gocart.dto.ResetPasswordRequest;
 import com.gocart.dto.UserProfileResponse;
+import com.gocart.model.EmailVerificationToken;
 import com.gocart.model.PasswordResetToken;
 import com.gocart.model.User;
+import com.gocart.repository.EmailVerificationTokenRepository;
 import com.gocart.repository.PasswordResetTokenRepository;
 import com.gocart.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +31,7 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordResetTokenRepository tokenRepository;
+    private final EmailVerificationTokenRepository emailVerificationTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final MailService mailService;
@@ -36,6 +39,7 @@ public class AuthService {
     @Value("${app.frontend.url}")
     private String frontendUrl;
 
+    @Transactional
     public AuthResponse register(RegisterRequest req) {
         if (userRepository.findByEmail(req.getEmail()).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already in use");
@@ -45,10 +49,32 @@ public class AuthService {
         user.setName(req.getName());
         user.setEmail(req.getEmail());
         user.setPassword(passwordEncoder.encode(req.getPassword()));
+        user.setEmailVerified(false);
         userRepository.save(user);
 
-        String token = jwtService.generateToken(user.getId(), user.getEmail(), user.getRole().name());
-        return new AuthResponse(token, UserProfileResponse.from(user));
+        // Tạo token xác thực email
+        emailVerificationTokenRepository.deleteByEmail(user.getEmail());
+        EmailVerificationToken evt = new EmailVerificationToken();
+        evt.setId(UUID.randomUUID().toString());
+        evt.setToken(UUID.randomUUID().toString());
+        evt.setEmail(user.getEmail());
+        evt.setExpiresAt(Instant.now().plus(24, ChronoUnit.HOURS));
+        emailVerificationTokenRepository.save(evt);
+
+        // Gửi email xác nhận
+        String link = frontendUrl + "/verify-email?token=" + evt.getToken();
+        String name = user.getName() == null ? "" : user.getName();
+        mailService.send(
+                user.getEmail(),
+                "Xác minh tài khoản GoCart",
+                "Xin chào " + name + ",\n\n"
+                        + "Cảm ơn bạn đã đăng ký tài khoản tại GoCart. Vui lòng bấm vào link dưới đây để xác nhận kích hoạt tài khoản của bạn "
+                        + "(link hết hạn sau 24 giờ):\n\n"
+                        + link + "\n\n"
+                        + "Nếu bạn không thực hiện đăng ký này, hãy bỏ qua email này."
+        );
+
+        return new AuthResponse(null, UserProfileResponse.from(user));
     }
 
     public AuthResponse login(LoginRequest req) {
@@ -57,6 +83,10 @@ public class AuthService {
 
         if (!passwordEncoder.matches(req.getPassword(), user.getPassword())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
+        }
+
+        if (!user.isEmailVerified()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tài khoản chưa được xác minh email. Vui lòng kiểm tra hộp thư để kích hoạt.");
         }
 
         String token = jwtService.generateToken(user.getId(), user.getEmail(), user.getRole().name());
@@ -120,5 +150,28 @@ public class AuthService {
 
         // Token dùng 1 lần -> xoá sau khi đổi xong
         tokenRepository.delete(prt);
+    }
+
+    /**
+     * Xác thực email từ token.
+     */
+    @Transactional
+    public void verifyEmail(String token) {
+        EmailVerificationToken evt = emailVerificationTokenRepository.findByToken(token)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Token xác thực không hợp lệ."));
+
+        if (evt.getExpiresAt().isBefore(Instant.now())) {
+            emailVerificationTokenRepository.delete(evt);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Token xác thực đã hết hạn.");
+        }
+
+        User user = userRepository.findByEmail(evt.getEmail())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Người dùng không tồn tại."));
+
+        user.setEmailVerified(true);
+        userRepository.save(user);
+
+        // Token dùng 1 lần -> xoá sau khi xác thực xong
+        emailVerificationTokenRepository.delete(evt);
     }
 }

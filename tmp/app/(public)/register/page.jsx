@@ -21,10 +21,11 @@ export default function RegisterPage() {
         e.preventDefault();
         setLoading(true);
         try {
-            const res = await authAPI.register(form);
-            dispatch(setAuth({ token: res.token, user: res.user }));
-            toast.success(`Tạo tài khoản thành công, ${res.user.name}!`);
-            router.push('/');
+            await authAPI.register(form);
+            toast.success('Đăng ký thành công! Vui lòng kiểm tra hộp thư email để xác minh tài khoản.', {
+                duration: 6000
+            });
+            router.push('/login');
         } catch (err) {
             toast.error(err.message || 'Đăng ký thất bại');
         } finally {

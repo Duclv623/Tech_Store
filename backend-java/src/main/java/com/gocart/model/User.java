@@ -42,6 +42,9 @@ public class User {
     @Enumerated(EnumType.STRING)
     private UserRole role = UserRole.USER;
     
+    @Column(name = "email_verified", nullable = false)
+    private boolean emailVerified = false;
+    
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
     private Map<String, Object> cart = new HashMap<>();

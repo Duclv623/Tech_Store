@@ -37,7 +37,7 @@ RESTART IDENTITY CASCADE;
 -- ============================================================
 -- 1) USERS (5: 1 admin + 2 seller + 2 buyer)
 -- ============================================================
-INSERT INTO "user" (id, name, email, image, phone, bio, address, password, role, cart) VALUES
+INSERT INTO "user" (id, name, email, image, phone, bio, address, password, role, cart, email_verified) VALUES
 ('user-admin-001',
  'Admin Lê Văn Đức',
  'betacomagency@gmail.com',
@@ -47,7 +47,8 @@ INSERT INTO "user" (id, name, email, image, phone, bio, address, password, role,
  '123 Nguyễn Trãi, Q1, TP.HCM',
  '$2b$10$KBA.kskZKm9e.7/P0lqfAOAa7.PDMeYSL7J7JbKRDQkYJ/nK0LBTa',
  'ADMIN',
- '{}'::jsonb),
+ '{}'::jsonb,
+ true),
 
 ('user-seller-001',
  'TechHub Seller',
@@ -58,7 +59,8 @@ INSERT INTO "user" (id, name, email, image, phone, bio, address, password, role,
  '456 Lý Thường Kiệt, Q10, TP.HCM',
  '$2b$10$uGLv1/P3fwEsOH4Dhw/urup7jcflYGTwSlU4dF2WGG1CLw8i4G5zy',
  'USER',
- '{}'::jsonb),
+ '{}'::jsonb,
+ true),
 
 ('user-seller-002',
  'GadgetWorld Seller',
@@ -69,7 +71,8 @@ INSERT INTO "user" (id, name, email, image, phone, bio, address, password, role,
  '789 Trần Hưng Đạo, Q5, TP.HCM',
  '$2b$10$uGLv1/P3fwEsOH4Dhw/urup7jcflYGTwSlU4dF2WGG1CLw8i4G5zy',
  'USER',
- '{}'::jsonb),
+ '{}'::jsonb,
+ true),
 
 ('user-buyer-001',
  'Nguyễn Văn An',
@@ -80,7 +83,8 @@ INSERT INTO "user" (id, name, email, image, phone, bio, address, password, role,
  '12 Đinh Tiên Hoàng, Q1, TP.HCM',
  '$2b$10$uGLv1/P3fwEsOH4Dhw/urup7jcflYGTwSlU4dF2WGG1CLw8i4G5zy',
  'USER',
- '{}'::jsonb),
+ '{}'::jsonb,
+ true),
 
 ('user-buyer-002',
  'Trần Thị Bích',
@@ -91,7 +95,8 @@ INSERT INTO "user" (id, name, email, image, phone, bio, address, password, role,
  '88 Phan Đăng Lưu, Phú Nhuận, TP.HCM',
  '$2b$10$uGLv1/P3fwEsOH4Dhw/urup7jcflYGTwSlU4dF2WGG1CLw8i4G5zy',
  'USER',
- '{}'::jsonb);
+ '{}'::jsonb,
+ true);
 
 
 -- ============================================================

@@ -30,12 +30,21 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void seedRoles() {
-        // 1. Backfill: user nào chưa có role → set USER
+        // 1. Backfill: user nào chưa có role → set USER, và set emailVerified = true cho user cũ
         userRepository.findAll().stream()
-                .filter(u -> u.getRole() == null)
                 .forEach(u -> {
-                    u.setRole(UserRole.USER);
-                    userRepository.save(u);
+                    boolean updated = false;
+                    if (u.getRole() == null) {
+                        u.setRole(UserRole.USER);
+                        updated = true;
+                    }
+                    if (!u.isEmailVerified()) {
+                        u.setEmailVerified(true);
+                        updated = true;
+                    }
+                    if (updated) {
+                        userRepository.save(u);
+                    }
                 });
 
         // 2. Promote admin email lên ADMIN nếu tồn tại

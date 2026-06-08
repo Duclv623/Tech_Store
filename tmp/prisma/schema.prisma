@@ -15,6 +15,7 @@ model User {
     id    String @id
     name  String
     email String
+    emailVerified Boolean @default(false)
     phone String 
     bio String 
     address String
