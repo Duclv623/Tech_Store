@@ -1,14 +1,17 @@
 package com.gocart.controller;
 
 import com.gocart.dto.AuthResponse;
+import com.gocart.dto.ForgotPasswordRequest;
 import com.gocart.dto.LoginRequest;
 import com.gocart.dto.RegisterRequest;
+import com.gocart.dto.ResetPasswordRequest;
 import com.gocart.service.AuthService;
 import jakarta.validation.Valid;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -31,5 +34,17 @@ public class AuthController {
     @GetMapping("/me")
     public ResponseEntity<String> me(Authentication auth) {
         return ResponseEntity.ok(auth.getName());
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Map<String, String>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest req) {
+        authService.forgotPassword(req);
+        return ResponseEntity.ok(Map.of("message", "Nếu email tồn tại, link đặt lại mật khẩu đã được gửi."));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Map<String, String>> resetPassword(@Valid @RequestBody ResetPasswordRequest req) {
+        authService.resetPassword(req);
+        return ResponseEntity.ok(Map.of("message", "Đặt lại mật khẩu thành công."));
     }
 }

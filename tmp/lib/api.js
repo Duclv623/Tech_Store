@@ -73,6 +73,14 @@ export const authAPI = {
         body: JSON.stringify(data),
     }),
     me: () => apiCall('/auth/me'),
+    forgotPassword: (data) => apiCall('/auth/forgot-password', {
+        method: 'POST',
+        body: JSON.stringify(data),
+    }),
+    resetPassword: (data) => apiCall('/auth/reset-password', {
+        method: 'POST',
+        body: JSON.stringify(data),
+    }),
 };
 
 // Products API
