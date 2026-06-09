@@ -42,7 +42,7 @@ public class User {
     @Enumerated(EnumType.STRING)
     private UserRole role = UserRole.USER;
     
-    @Column(name = "email_verified", nullable = false)
+    @Column(name = "email_verified", nullable = false, columnDefinition = "boolean default false")
     private boolean emailVerified = false;
     
     @JdbcTypeCode(SqlTypes.JSON)
