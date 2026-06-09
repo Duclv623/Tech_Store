@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useDispatch } from 'react-redux'
 import toast from 'react-hot-toast'
-import { Mail, Phone, MapPin, User as UserIcon, FileText, Image as ImageIcon, Lock } from 'lucide-react'
+import { Mail, Phone, MapPin, User as UserIcon, FileText, Image as ImageIcon, Lock, ChevronRight } from 'lucide-react'
 import { usersAPI, authAPI, authStorage } from '@/lib/api'
 import { setAuth } from '@/lib/features/auth/authSlice'
 
@@ -13,6 +13,7 @@ export default function ProfilePage() {
 
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
+    const [showPasswordForm, setShowPasswordForm] = useState(false)
     const [changingPassword, setChangingPassword] = useState(false)
     const [passwordForm, setPasswordForm] = useState({
         currentPassword: '',
@@ -72,8 +73,13 @@ export default function ProfilePage() {
         setPasswordForm({ ...passwordForm, [e.target.name]: e.target.value })
     }
 
+    const handleCancelPassword = () => {
+        setShowPasswordForm(false)
+        setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' })
+    }
+
     const handlePasswordSubmit = async (e) => {
-        e.preventDefault()
+        e?.preventDefault?.()
         if (passwordForm.newPassword !== passwordForm.confirmPassword) {
             toast.error('Mật khẩu xác nhận không khớp')
             return
@@ -85,6 +91,7 @@ export default function ProfilePage() {
                 newPassword: passwordForm.newPassword,
             })
             setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' })
+            setShowPasswordForm(false)
             toast.success('Đổi mật khẩu thành công')
         } catch (err) {
             toast.error(err.message || 'Đổi mật khẩu thất bại')
@@ -148,50 +155,77 @@ export default function ProfilePage() {
                     />
                 </div>
 
+                <div className="pt-1 border-t border-slate-100">
+                    {!showPasswordForm ? (
+                        <button
+                            type="button"
+                            onClick={() => setShowPasswordForm(true)}
+                            className="w-full flex items-center justify-between py-3 px-1 rounded-lg hover:bg-slate-50 transition text-left group"
+                        >
+                            <div className="flex items-center gap-2">
+                                <Lock size={16} className="text-slate-500" />
+                                <div>
+                                    <p className="text-sm font-medium text-slate-700">Mật khẩu</p>
+                                    <p className="text-xs text-slate-400 mt-0.5">••••••••</p>
+                                </div>
+                            </div>
+                            <span className="text-sm text-indigo-500 group-hover:text-indigo-600 flex items-center gap-0.5">
+                                Đổi mật khẩu
+                                <ChevronRight size={16} />
+                            </span>
+                        </button>
+                    ) : (
+                        <div className="pt-4 space-y-4">
+                            <div className="flex items-center justify-between">
+                                <p className="text-sm font-medium text-slate-700 flex items-center gap-2">
+                                    <Lock size={16} className="text-slate-500" />
+                                    Đổi mật khẩu
+                                </p>
+                                <button
+                                    type="button"
+                                    onClick={handleCancelPassword}
+                                    className="text-sm text-slate-500 hover:text-slate-700"
+                                >
+                                    Hủy
+                                </button>
+                            </div>
+                            <PasswordField
+                                label="Mật khẩu hiện tại"
+                                name="currentPassword"
+                                value={passwordForm.currentPassword}
+                                onChange={handlePasswordChange}
+                            />
+                            <PasswordField
+                                label="Mật khẩu mới"
+                                name="newPassword"
+                                value={passwordForm.newPassword}
+                                onChange={handlePasswordChange}
+                                placeholder="Ít nhất 6 ký tự"
+                            />
+                            <PasswordField
+                                label="Xác nhận mật khẩu mới"
+                                name="confirmPassword"
+                                value={passwordForm.confirmPassword}
+                                onChange={handlePasswordChange}
+                            />
+                            <button
+                                type="button"
+                                onClick={handlePasswordSubmit}
+                                disabled={changingPassword}
+                                className="w-full sm:w-auto px-6 py-2 bg-slate-800 hover:bg-slate-900 disabled:opacity-60 transition text-white rounded-full text-sm font-medium"
+                            >
+                                {changingPassword ? 'Đang đổi...' : 'Xác nhận đổi mật khẩu'}
+                            </button>
+                        </div>
+                    )}
+                </div>
+
                 <button
                     type="submit"
                     disabled={saving}
                     className="w-full sm:w-auto px-8 py-2.5 bg-indigo-500 hover:bg-indigo-600 disabled:opacity-60 transition text-white rounded-full font-medium"
                 >
                     {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
-                </button>
-            </form>
-
-            <form onSubmit={handlePasswordSubmit} className="mt-8 bg-white border border-slate-200 rounded-2xl p-6 space-y-5">
-                <div>
-                    <h2 className="text-lg font-medium text-slate-800 flex items-center gap-2">
-                        <Lock size={18} className="text-slate-500" />
-                        Đổi mật khẩu
-                    </h2>
-                    <p className="text-sm text-slate-500 mt-1">Cập nhật mật khẩu đăng nhập của bạn</p>
-                </div>
-
-                <PasswordField
-                    label="Mật khẩu hiện tại"
-                    name="currentPassword"
-                    value={passwordForm.currentPassword}
-                    onChange={handlePasswordChange}
-                />
-                <PasswordField
-                    label="Mật khẩu mới"
-                    name="newPassword"
-                    value={passwordForm.newPassword}
-                    onChange={handlePasswordChange}
-                    placeholder="Ít nhất 6 ký tự"
-                />
-                <PasswordField
-                    label="Xác nhận mật khẩu mới"
-                    name="confirmPassword"
-                    value={passwordForm.confirmPassword}
-                    onChange={handlePasswordChange}
-                />
-
-                <button
-                    type="submit"
-                    disabled={changingPassword}
-                    className="w-full sm:w-auto px-8 py-2.5 bg-slate-800 hover:bg-slate-900 disabled:opacity-60 transition text-white rounded-full font-medium"
-                >
-                    {changingPassword ? 'Đang đổi...' : 'Đổi mật khẩu'}
                 </button>
             </form>
         </div>
