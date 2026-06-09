@@ -4,7 +4,11 @@ import { useEffect, useRef } from "react";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+// WebSocket endpoint là /ws (không có /api prefix)
+// Ví dụ: NEXT_PUBLIC_API_URL = "http://localhost:8080/api" → WS_URL = "http://localhost:8080"
+const WS_BASE_URL = API_URL.replace(/\/api\/?$/, "");
+
 
 /**
  * Hook subscribe real-time trạng thái đơn hàng qua WebSocket (STOMP).
@@ -19,7 +23,7 @@ export function useOrderSocket(orderId, onStatusChange) {
         if (!orderId) return;
 
         const client = new Client({
-            webSocketFactory: () => new SockJS(`${BACKEND_URL}/ws`),
+            webSocketFactory: () => new SockJS(`${WS_BASE_URL}/ws`),
             reconnectDelay: 5000,
             onConnect: () => {
                 client.subscribe(`/topic/orders/${orderId}`, (frame) => {

@@ -5,11 +5,20 @@ import { useSelector } from "react-redux";
 import Rating from "./Rating";
 import { useState } from "react";
 import RatingModal from "./RatingModal";
+import { useOrderSocket } from "@/lib/useOrderSocket";
 
 const OrderItem = ({ order }) => {
 
-    const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || '$';
+    const [currentStatus, setCurrentStatus] = useState(order.status);
     const [ratingModal, setRatingModal] = useState(null);
+
+    // Subscribe real-time WebSocket cho đơn hàng này
+    useOrderSocket(order.id, ({ status }) => {
+        if (status) setCurrentStatus(status);
+    });
+
+
+    const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || '$';
 
     const { ratings } = useSelector(state => state.rating);
 
@@ -60,7 +69,7 @@ const OrderItem = ({ order }) => {
                                             <div>
                                                 {ratings.find(rating => order.id === rating.orderId && product.id === rating.productId)
                                                     ? <Rating value={ratings.find(rating => order.id === rating.orderId && product.id === rating.productId).rating} />
-                                                    : <button onClick={() => setRatingModal({ orderId: order.id, productId: product.id })} className={`text-green-500 hover:bg-green-50 transition ${order.status !== "DELIVERED" && 'hidden'}`}>Đánh giá sản phẩm</button>
+                                                    : <button onClick={() => setRatingModal({ orderId: order.id, productId: product.id })} className={`text-green-500 hover:bg-green-50 transition ${currentStatus !== "DELIVERED" && 'hidden'}`}>Đánh giá sản phẩm</button>
                                                 }
                                             </div>
                                         )}
@@ -86,15 +95,15 @@ const OrderItem = ({ order }) => {
 
                 <td className="text-left space-y-2 text-sm max-md:hidden">
                     <div
-                        className={`flex items-center justify-center gap-1 rounded-full p-1 ${order.status === 'confirmed'
+                        className={`flex items-center justify-center gap-1 rounded-full p-1 ${currentStatus === 'confirmed'
                             ? 'text-yellow-500 bg-yellow-100'
-                            : order.status === 'delivered'
+                            : currentStatus === 'delivered' || currentStatus === 'DELIVERED'
                                 ? 'text-green-500 bg-green-100'
                                 : 'text-slate-500 bg-slate-100'
                             }`}
                     >
                         <DotIcon size={10} className="scale-250" />
-                        {translateStatus(order.status)}
+                        {translateStatus(currentStatus)}
                     </div>
                 </td>
             </tr>
@@ -111,7 +120,7 @@ const OrderItem = ({ order }) => {
                     <br />
                     <div className="flex items-center">
                         <span className='text-center mx-auto px-6 py-1.5 rounded bg-green-100 text-green-700' >
-                            {translateStatus(order.status)}
+                            {translateStatus(currentStatus)}
                         </span>
                     </div>
                 </td>
