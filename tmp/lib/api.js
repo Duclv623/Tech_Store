@@ -84,6 +84,10 @@ export const authAPI = {
     verifyEmail: (token) => apiCall(`/auth/verify-email?token=${encodeURIComponent(token)}`, {
         method: 'POST',
     }),
+    changePassword: (data) => apiCall('/auth/change-password', {
+        method: 'PUT',
+        body: JSON.stringify(data),
+    }),
 };
 
 // Products API

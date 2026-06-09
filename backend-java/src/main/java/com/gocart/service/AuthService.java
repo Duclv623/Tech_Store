@@ -1,6 +1,7 @@
 package com.gocart.service;
 
 import com.gocart.dto.AuthResponse;
+import com.gocart.dto.ChangePasswordRequest;
 import com.gocart.dto.ForgotPasswordRequest;
 import com.gocart.dto.LoginRequest;
 import com.gocart.dto.RegisterRequest;
@@ -91,6 +92,23 @@ public class AuthService {
 
         String token = jwtService.generateToken(user.getId(), user.getEmail(), user.getRole().name());
         return new AuthResponse(token, UserProfileResponse.from(user));
+    }
+
+    @Transactional
+    public void changePassword(String userId, ChangePasswordRequest req) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Người dùng không tồn tại"));
+
+        if (!passwordEncoder.matches(req.getCurrentPassword(), user.getPassword())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mật khẩu hiện tại không đúng");
+        }
+
+        if (passwordEncoder.matches(req.getNewPassword(), user.getPassword())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mật khẩu mới phải khác mật khẩu hiện tại");
+        }
+
+        user.setPassword(passwordEncoder.encode(req.getNewPassword()));
+        userRepository.save(user);
     }
 
     /**

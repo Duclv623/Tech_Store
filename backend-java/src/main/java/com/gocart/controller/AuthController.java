@@ -1,6 +1,7 @@
 package com.gocart.controller;
 
 import com.gocart.dto.AuthResponse;
+import com.gocart.dto.ChangePasswordRequest;
 import com.gocart.dto.ForgotPasswordRequest;
 import com.gocart.dto.LoginRequest;
 import com.gocart.dto.RegisterRequest;
@@ -34,6 +35,17 @@ public class AuthController {
     @GetMapping("/me")
     public ResponseEntity<String> me(Authentication auth) {
         return ResponseEntity.ok(auth.getName());
+    }
+
+    @PutMapping("/change-password")
+    public ResponseEntity<Map<String, String>> changePassword(
+            @Valid @RequestBody ChangePasswordRequest req,
+            Authentication auth) {
+        if (auth == null || auth.getName() == null) {
+            return ResponseEntity.status(401).body(Map.of("message", "Unauthorized"));
+        }
+        authService.changePassword(auth.getName(), req);
+        return ResponseEntity.ok(Map.of("message", "Đổi mật khẩu thành công"));
     }
 
     @PostMapping("/forgot-password")
