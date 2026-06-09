@@ -1,6 +1,7 @@
 package com.gocart.service;
 
 import com.gocart.dto.CreateOrderRequest;
+import com.gocart.dto.OrderStatusMessage;
 import com.gocart.model.Order;
 import com.gocart.model.OrderItem;
 import com.gocart.model.OrderStatus;
@@ -11,6 +12,7 @@ import com.gocart.repository.OrderStatusHistoryRepository;
 import com.gocart.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -28,6 +30,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
     private final OrderStatusHistoryRepository historyRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
     private void logHistory(String orderId, OrderStatus newStatus, OrderStatus previous, String changedBy, String note) {
         OrderStatusHistory h = new OrderStatusHistory();
@@ -138,6 +141,11 @@ public class OrderService {
         // Log history nếu status thực sự đổi
         if (previous != status) {
             logHistory(saved.getId(), status, previous, null, null);
+            // Push real-time qua WebSocket
+            messagingTemplate.convertAndSend(
+                "/topic/orders/" + saved.getId(),
+                new OrderStatusMessage(saved.getId(), status.name(), "Trạng thái đơn hàng đã được cập nhật")
+            );
         }
         return saved;
     }
