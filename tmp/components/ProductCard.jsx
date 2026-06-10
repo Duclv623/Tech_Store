@@ -3,21 +3,25 @@ import { StarIcon } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import React from 'react'
+import WishlistButton from './WishlistButton'
 
 const ProductCard = ({ product }) => {
 
     const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || '$'
 
-    // calculate the average rating of the product
-    // Handle case where rating is undefined or empty array
     const rating = product.rating && product.rating.length > 0
         ? Math.round(product.rating.reduce((acc, curr) => acc + curr.rating, 0) / product.rating.length)
         : 0;
 
     return (
-        <Link href={`/product/${product.id}`} className=' group max-xl:mx-auto'>
-            <div className='bg-[#F5F5F5] h-40  sm:w-60 sm:h-68 rounded-lg flex items-center justify-center'>
+        <Link href={`/product/${product.id}`} className='group max-xl:mx-auto'>
+            {/* Bọc trong relative để đặt nút tim góc trên phải */}
+            <div className='relative bg-[#F5F5F5] h-40 sm:w-60 sm:h-68 rounded-lg flex items-center justify-center'>
                 <Image width={500} height={500} className='max-h-30 sm:max-h-40 w-auto group-hover:scale-115 transition duration-300' src={product.images && product.images.length > 0 ? product.images[0] : '/placeholder.png'} alt="" />
+                {/* Nút yêu thích */}
+                <div className='absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200'>
+                    <WishlistButton productId={product.id} />
+                </div>
             </div>
             <div className='flex justify-between gap-3 text-sm text-slate-800 pt-2 max-w-60'>
                 <div>

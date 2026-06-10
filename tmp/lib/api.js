@@ -264,3 +264,10 @@ export const couponsAPI = {
     }),
 };
 
+// Wishlist API
+export const wishlistAPI = {
+    getAll: () => apiCall('/wishlist'),
+    toggle: (productId) => apiCall(`/wishlist/toggle/${productId}`, { method: 'POST' }),
+    check: (productId) => apiCall(`/wishlist/check/${productId}`),
+};
+
