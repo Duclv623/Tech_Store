@@ -64,7 +64,7 @@ const OrderSummary = ({ totalPrice, items }) => {
             });
             dispatch(clearCart());
             toast.success('Đặt hàng thành công');
-            router.push('/orders');
+            router.push('/account/orders');
         } catch (err) {
             toast.error(err.message || 'Đặt hàng thất bại');
             throw err;

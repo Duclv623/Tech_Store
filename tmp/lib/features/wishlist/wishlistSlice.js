@@ -1,12 +1,26 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import { wishlistAPI } from '@/lib/api'
+import { wishlistAPI, productsAPI } from '@/lib/api'
 
-// Fetch wishlist từ server
+// Fetch wishlist từ server.
+// Backend trả về Wishlist không kèm product (trường product bị @JsonIgnore),
+// nên ta nạp thêm chi tiết sản phẩm theo productId để hiển thị tên/ảnh/giá.
 export const fetchWishlist = createAsyncThunk(
     'wishlist/fetch',
     async (_, { rejectWithValue }) => {
         try {
-            return await wishlistAPI.getAll()
+            const items = await wishlistAPI.getAll()
+            const enriched = await Promise.all(
+                (items || []).map(async (item) => {
+                    if (item.product) return item
+                    try {
+                        const product = await productsAPI.getById(item.productId)
+                        return { ...item, product }
+                    } catch {
+                        return item // giữ nguyên, UI sẽ dùng fallback
+                    }
+                })
+            )
+            return enriched
         } catch (err) {
             return rejectWithValue(err.message)
         }

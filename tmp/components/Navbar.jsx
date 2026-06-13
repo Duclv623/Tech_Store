@@ -1,5 +1,5 @@
 'use client'
-import { ChevronDown, Heart, LogOut, Package, Search, ShoppingCart, UserCircle2 } from "lucide-react";
+import { ChevronDown, Heart, Lock, LogOut, Package, Search, ShoppingCart, UserCircle2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useState } from "react";
@@ -96,18 +96,25 @@ const Navbar = () => {
                                             <p className="text-sm font-medium text-slate-700 truncate">{user.email}</p>
                                         </div>
                                         <Link
-                                            href="/orders"
-                                            className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition"
-                                        >
-                                            <Package size={16} />
-                                            Đơn hàng của tôi
-                                        </Link>
-                                        <Link
-                                            href="/profile"
+                                            href="/account/profile"
                                             className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition"
                                         >
                                             <UserCircle2 size={16} />
                                             Thông tin cá nhân
+                                        </Link>
+                                        <Link
+                                            href="/account/password"
+                                            className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition"
+                                        >
+                                            <Lock size={16} />
+                                            Đổi mật khẩu
+                                        </Link>
+                                        <Link
+                                            href="/account/orders"
+                                            className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition"
+                                        >
+                                            <Package size={16} />
+                                            Đơn hàng của tôi
                                         </Link>
                                         <button
                                             onClick={handleLogout}
