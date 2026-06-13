@@ -271,3 +271,11 @@ export const wishlistAPI = {
     check: (productId) => apiCall(`/wishlist/check/${productId}`),
 };
 
+// Notifications API
+export const notificationsAPI = {
+    getAll: () => apiCall('/notifications'),
+    unreadCount: () => apiCall('/notifications/unread-count'),
+    markRead: (id) => apiCall(`/notifications/${id}/read`, { method: 'PATCH' }),
+    markAllRead: () => apiCall('/notifications/read-all', { method: 'PATCH' }),
+};
+

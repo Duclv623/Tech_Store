@@ -31,6 +31,7 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final OrderStatusHistoryRepository historyRepository;
     private final SimpMessagingTemplate messagingTemplate;
+    private final NotificationService notificationService;
 
     private void logHistory(String orderId, OrderStatus newStatus, OrderStatus previous, String changedBy, String note) {
         OrderStatusHistory h = new OrderStatusHistory();
@@ -145,6 +146,15 @@ public class OrderService {
             messagingTemplate.convertAndSend(
                 "/topic/orders/" + saved.getId(),
                 new OrderStatusMessage(saved.getId(), status.name(), "Trạng thái đơn hàng đã được cập nhật")
+            );
+
+            // Tạo thông báo lưu DB + đẩy realtime cho chủ đơn
+            notificationService.create(
+                saved.getUserId(),
+                "ORDER_STATUS",
+                status.getNotiTitle(),
+                status.getNotiMessage(),
+                "/account/orders"
             );
         }
         return saved;

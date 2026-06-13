@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import { clearAuth } from "@/lib/features/auth/authSlice";
 import { clearAddresses } from "@/lib/features/address/addressSlice";
 import { clearWishlist, selectWishlistCount } from "@/lib/features/wishlist/wishlistSlice";
+import NotificationBell from "@/components/NotificationBell";
 
 const Navbar = () => {
 
@@ -79,6 +80,9 @@ const Navbar = () => {
                             Giỏ hàng
                             <button className="absolute -top-1 left-3 text-[8px] text-white bg-slate-600 size-3.5 rounded-full">{cartCount}</button>
                         </Link>
+
+                        {/* Chuông thông báo (chỉ hiện khi đã đăng nhập) */}
+                        <NotificationBell />
 
                         {user ? (
                             <div className="relative group shrink-0">
