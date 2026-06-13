@@ -17,7 +17,7 @@ const Navbar = () => {
 
     const navLinkClass = (href) => {
         const isActive = href === '/' ? pathname === '/' : pathname.startsWith(href);
-        return `relative inline-block pb-1 transition-all duration-200 hover:-translate-y-0.5 hover:text-indigo-600 ${isActive
+        return `relative inline-block shrink-0 whitespace-nowrap pb-1 transition-all duration-200 hover:-translate-y-0.5 hover:text-indigo-600 ${isActive
                 ? "text-indigo-600 font-medium after:content-[''] after:absolute after:left-0 after:right-0 after:-bottom-0.5 after:h-0.5 after:bg-indigo-600 after:rounded-full"
                 : "text-slate-600"
             }`;
@@ -46,7 +46,7 @@ const Navbar = () => {
             <div className="mx-6">
                 <div className="flex items-center justify-between max-w-7xl mx-auto py-4  transition-all">
 
-                    <Link href="/" className="relative text-4xl font-semibold text-slate-700">
+                    <Link href="/" className="relative shrink-0 mr-10 text-4xl font-semibold text-slate-700 whitespace-nowrap">
                         <span className="text-green-600">go</span>cart<span className="text-green-600 text-5xl leading-0">.</span>
                         <p className="absolute text-xs font-semibold -top-1 -right-8 px-3 p-0.5 rounded-full flex items-center gap-2 text-white bg-green-500">
                             plus
@@ -54,19 +54,19 @@ const Navbar = () => {
                     </Link>
 
                     {/* Desktop Menu */}
-                    <div className="hidden sm:flex items-center gap-4 lg:gap-8 text-slate-600">
+                    <div className="hidden sm:flex items-center gap-4 lg:gap-6 text-slate-600">
                         <Link href="/" className={navLinkClass('/')}>Trang chủ</Link>
                         <Link href="/shop" className={navLinkClass('/shop')}>Cửa hàng</Link>
                         <Link href="/about" className={navLinkClass('/about')}>Giới thiệu</Link>
                         <Link href="/contact" className={navLinkClass('/contact')}>Liên hệ</Link>
 
-                        <form onSubmit={handleSearch} className="hidden xl:flex items-center w-xs text-sm gap-2 bg-slate-100 px-4 py-3 rounded-full">
-                            <Search size={18} className="text-slate-600" />
+                        <form onSubmit={handleSearch} className="hidden xl:flex items-center flex-1 min-w-0 max-w-xs text-sm gap-2 bg-slate-100 px-4 py-3 rounded-full">
+                            <Search size={18} className="text-slate-600 shrink-0" />
                             <input className="w-full bg-transparent outline-none placeholder-slate-600" type="text" placeholder="Tìm sản phẩm" value={search} onChange={(e) => setSearch(e.target.value)} required />
                         </form>
 
                         {/* Wishlist icon */}
-                        <Link href="/wishlist" className="relative flex items-center gap-2 text-slate-600 hover:text-red-500 transition">
+                        <Link href="/wishlist" className="relative flex items-center gap-2 shrink-0 whitespace-nowrap text-slate-600 hover:text-red-500 transition">
                             <Heart size={18} />
                             Yêu thích
                             {wishlistCount > 0 && (
@@ -74,15 +74,15 @@ const Navbar = () => {
                             )}
                         </Link>
 
-                        <Link href="/cart" className="relative flex items-center gap-2 text-slate-600">
+                        <Link href="/cart" className="relative flex items-center gap-2 shrink-0 whitespace-nowrap text-slate-600">
                             <ShoppingCart size={18} />
                             Giỏ hàng
                             <button className="absolute -top-1 left-3 text-[8px] text-white bg-slate-600 size-3.5 rounded-full">{cartCount}</button>
                         </Link>
 
                         {user ? (
-                            <div className="relative group">
-                                <button className="flex items-center gap-1.5 text-slate-600 hover:text-indigo-600 transition cursor-pointer">
+                            <div className="relative group shrink-0">
+                                <button className="flex items-center gap-1.5 whitespace-nowrap text-slate-600 hover:text-indigo-600 transition cursor-pointer">
                                     <UserCircle2 size={18} />
                                     Xin chào, {user.name}
                                     <ChevronDown size={16} className="transition group-hover:rotate-180" />
