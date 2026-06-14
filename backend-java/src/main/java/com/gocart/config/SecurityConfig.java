@@ -38,6 +38,7 @@ public class SecurityConfig {
                         .requestMatchers(new AntPathRequestMatcher("/api/stores/**")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/api/categories/**", HttpMethod.GET.name())).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/ws/**")).permitAll()
+                        .requestMatchers(new AntPathRequestMatcher("/actuator/health")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/error")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/**", HttpMethod.OPTIONS.name())).permitAll()
                         .anyRequest().authenticated()
