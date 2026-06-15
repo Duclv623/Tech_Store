@@ -42,6 +42,7 @@ Tùy vào code thực tế trong repo, bạn có thể giữ hoặc chỉnh lạ
   - Danh sách sản phẩm
   - Form nhập thông tin sản phẩm
   - Bảng hiển thị/tra cứu
+  - Nhận thông báo trạng thái đơn hàng 
 
 ---
 
