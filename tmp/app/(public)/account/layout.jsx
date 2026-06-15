@@ -2,11 +2,12 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { User as UserIcon, Lock, Package } from 'lucide-react'
+import { User as UserIcon, Lock, Package, Heart } from 'lucide-react'
 import { authStorage } from '@/lib/api'
 
 const NAV = [
     { href: '/account/profile', label: 'Thông tin cá nhân', icon: UserIcon },
+    { href: '/account/wishlist', label: 'Sản phẩm yêu thích', icon: Heart },
     { href: '/account/password', label: 'Đổi mật khẩu', icon: Lock },
     { href: '/account/orders', label: 'Đơn hàng', icon: Package },
 ]

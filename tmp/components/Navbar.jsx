@@ -67,7 +67,7 @@ const Navbar = () => {
                         </form>
 
                         {/* Wishlist icon */}
-                        <Link href="/wishlist" className="relative flex items-center gap-2 shrink-0 whitespace-nowrap text-slate-600 hover:text-red-500 transition">
+                        <Link href="/account/wishlist" className="relative flex items-center gap-2 shrink-0 whitespace-nowrap text-slate-600 hover:text-red-500 transition">
                             <Heart size={18} />
                             Yêu thích
                             {wishlistCount > 0 && (
