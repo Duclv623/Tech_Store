@@ -66,15 +66,6 @@ const Navbar = () => {
                             <input className="w-full bg-transparent outline-none placeholder-slate-600" type="text" placeholder="Tìm sản phẩm" value={search} onChange={(e) => setSearch(e.target.value)} required />
                         </form>
 
-                        {/* Wishlist icon */}
-                        <Link href="/account/wishlist" className="relative flex items-center gap-2 shrink-0 whitespace-nowrap text-slate-600 hover:text-red-500 transition">
-                            <Heart size={18} />
-                            Yêu thích
-                            {wishlistCount > 0 && (
-                                <span className="absolute -top-1 left-3 text-[8px] text-white bg-red-500 size-3.5 rounded-full flex items-center justify-center">{wishlistCount}</span>
-                            )}
-                        </Link>
-
                         <Link href="/cart" className="relative flex items-center gap-2 shrink-0 whitespace-nowrap text-slate-600">
                             <ShoppingCart size={18} />
                             Giỏ hàng
@@ -105,6 +96,18 @@ const Navbar = () => {
                                         >
                                             <UserCircle2 size={16} />
                                             Thông tin cá nhân
+                                        </Link>
+                                        <Link
+                                            href="/account/wishlist"
+                                            className="flex items-center justify-between gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition"
+                                        >
+                                            <span className="flex items-center gap-3">
+                                                <Heart size={16} />
+                                                Sản phẩm yêu thích
+                                            </span>
+                                            {wishlistCount > 0 && (
+                                                <span className="text-[10px] text-white bg-red-500 min-w-4 h-4 px-1 rounded-full flex items-center justify-center">{wishlistCount}</span>
+                                            )}
                                         </Link>
                                         <Link
                                             href="/account/password"
