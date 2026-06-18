@@ -3,22 +3,24 @@ import { XIcon } from "lucide-react"
 import { useState } from "react"
 import { toast } from "react-hot-toast"
 import { useDispatch, useSelector } from "react-redux"
-import { createAddress } from "@/lib/features/address/addressSlice"
+import { createAddress, updateAddress } from "@/lib/features/address/addressSlice"
 
-const AddressModal = ({ setShowAddressModal }) => {
+const AddressModal = ({ setShowAddressModal, editAddress = null }) => {
 
     const dispatch = useDispatch()
     const user = useSelector(state => state.auth.user)
 
+    const isEdit = Boolean(editAddress?.id)
+
     const [address, setAddress] = useState({
-        name: user?.name || '',
-        email: user?.email || '',
-        street: '',
-        city: '',
-        state: '',
-        zip: '',
-        country: '',
-        phone: user?.phone || '',
+        name: editAddress?.name ?? user?.name ?? '',
+        email: editAddress?.email ?? user?.email ?? '',
+        street: editAddress?.street ?? '',
+        city: editAddress?.city ?? '',
+        state: editAddress?.state ?? '',
+        zip: editAddress?.zip ?? '',
+        country: editAddress?.country ?? '',
+        phone: editAddress?.phone ?? user?.phone ?? '',
     })
     const [saving, setSaving] = useState(false)
 
@@ -37,8 +39,13 @@ const AddressModal = ({ setShowAddressModal }) => {
         }
         setSaving(true)
         try {
-            await dispatch(createAddress({ ...address, userId: user.id })).unwrap()
-            toast.success('Đã lưu địa chỉ')
+            if (isEdit) {
+                await dispatch(updateAddress({ id: editAddress.id, ...address, userId: user.id })).unwrap()
+                toast.success('Đã cập nhật địa chỉ')
+            } else {
+                await dispatch(createAddress({ ...address, userId: user.id })).unwrap()
+                toast.success('Đã lưu địa chỉ')
+            }
             setShowAddressModal(false)
         } catch (err) {
             toast.error(err || 'Lưu địa chỉ thất bại')
@@ -50,7 +57,7 @@ const AddressModal = ({ setShowAddressModal }) => {
     return (
         <form onSubmit={handleSubmit} className="fixed inset-0 z-50 bg-white/60 backdrop-blur h-screen flex items-center justify-center">
             <div className="flex flex-col gap-5 text-slate-700 w-full max-w-sm mx-6">
-                <h2 className="text-3xl ">Thêm <span className="font-semibold">địa chỉ mới</span></h2>
+                <h2 className="text-3xl ">{isEdit ? <>Sửa <span className="font-semibold">địa chỉ</span></> : <>Thêm <span className="font-semibold">địa chỉ mới</span></>}</h2>
                 <input name="name" onChange={handleAddressChange} value={address.name} className="p-2 px-4 outline-none border border-slate-200 rounded w-full" type="text" placeholder="Nhập họ tên" required />
                 <input name="email" onChange={handleAddressChange} value={address.email} className="p-2 px-4 outline-none border border-slate-200 rounded w-full" type="email" placeholder="Địa chỉ email" required />
                 <input name="street" onChange={handleAddressChange} value={address.street} className="p-2 px-4 outline-none border border-slate-200 rounded w-full" type="text" placeholder="Đường" required />
@@ -68,7 +75,7 @@ const AddressModal = ({ setShowAddressModal }) => {
                     disabled={saving}
                     className="bg-slate-800 text-white text-sm font-medium py-2.5 rounded-md hover:bg-slate-900 active:scale-95 disabled:opacity-60 transition-all"
                 >
-                    {saving ? 'ĐANG LƯU...' : 'LƯU ĐỊA CHỈ'}
+                    {saving ? 'ĐANG LƯU...' : (isEdit ? 'CẬP NHẬT ĐỊA CHỈ' : 'LƯU ĐỊA CHỈ')}
                 </button>
             </div>
             <XIcon size={30} className="absolute top-5 right-5 text-slate-500 hover:text-slate-700 cursor-pointer" onClick={() => setShowAddressModal(false)} />

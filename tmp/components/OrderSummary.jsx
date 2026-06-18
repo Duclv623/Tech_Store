@@ -21,6 +21,7 @@ const OrderSummary = ({ totalPrice, items }) => {
     const [paymentMethod, setPaymentMethod] = useState('COD');
     const [selectedAddress, setSelectedAddress] = useState(null);
     const [showAddressModal, setShowAddressModal] = useState(false);
+    const [editingAddress, setEditingAddress] = useState(null);
     const [couponCodeInput, setCouponCodeInput] = useState('');
     const [coupon, setCoupon] = useState('');
 
@@ -33,6 +34,14 @@ const OrderSummary = ({ totalPrice, items }) => {
     useEffect(() => {
         if (!selectedAddress && addressList.length > 0) {
             setSelectedAddress(addressList[0]);
+        }
+    }, [addressList, selectedAddress]);
+
+    // Đồng bộ địa chỉ đang chọn với danh sách sau khi sửa
+    useEffect(() => {
+        if (selectedAddress?.id) {
+            const fresh = addressList.find(a => a.id === selectedAddress.id);
+            if (fresh && fresh !== selectedAddress) setSelectedAddress(fresh);
         }
     }, [addressList, selectedAddress]);
 
@@ -87,9 +96,12 @@ const OrderSummary = ({ totalPrice, items }) => {
                 <p>Địa chỉ</p>
                 {
                     selectedAddress ? (
-                        <div className='flex gap-2 items-center'>
-                            <p>{selectedAddress.name}, {selectedAddress.city}, {selectedAddress.state}, {selectedAddress.zip}</p>
-                            <SquarePenIcon onClick={() => setSelectedAddress(null)} className='cursor-pointer' size={18} />
+                        <div className='flex flex-col gap-1'>
+                            <div className='flex gap-2 items-center'>
+                                <p>{selectedAddress.name}, {selectedAddress.city}, {selectedAddress.state}, {selectedAddress.zip}</p>
+                                <SquarePenIcon onClick={() => { setEditingAddress(selectedAddress); setShowAddressModal(true); }} className='cursor-pointer shrink-0' size={18} />
+                            </div>
+                            <button type='button' onClick={() => setSelectedAddress(null)} className='text-xs text-indigo-600 hover:underline w-fit'>Chọn địa chỉ khác</button>
                         </div>
                     ) : (
                         <div>
@@ -105,7 +117,7 @@ const OrderSummary = ({ totalPrice, items }) => {
                                     </select>
                                 )
                             }
-                            <button className='flex items-center gap-1 text-slate-600 mt-1' onClick={() => setShowAddressModal(true)} >Thêm địa chỉ <PlusIcon size={18} /></button>
+                            <button className='flex items-center gap-1 text-slate-600 mt-1' onClick={() => { setEditingAddress(null); setShowAddressModal(true); }} >Thêm địa chỉ <PlusIcon size={18} /></button>
                         </div>
                     )
                 }
@@ -144,7 +156,12 @@ const OrderSummary = ({ totalPrice, items }) => {
             </div>
             <button onClick={e => toast.promise(handlePlaceOrder(e), { loading: 'Đang đặt hàng...' })} className='w-full bg-slate-700 text-white py-2.5 rounded hover:bg-slate-900 active:scale-95 transition-all'>Đặt hàng</button>
 
-            {showAddressModal && <AddressModal setShowAddressModal={setShowAddressModal} />}
+            {showAddressModal && (
+                <AddressModal
+                    editAddress={editingAddress}
+                    setShowAddressModal={(v) => { setShowAddressModal(v); if (!v) setEditingAddress(null); }}
+                />
+            )}
 
         </div>
     )

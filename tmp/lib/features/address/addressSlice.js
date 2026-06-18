@@ -23,6 +23,17 @@ export const createAddress = createAsyncThunk(
     }
 )
 
+export const updateAddress = createAsyncThunk(
+    'address/updateAddress',
+    async ({ id, ...payload }, { rejectWithValue }) => {
+        try {
+            return await addressesAPI.update(id, payload)
+        } catch (error) {
+            return rejectWithValue(error.message)
+        }
+    }
+)
+
 const addressSlice = createSlice({
     name: 'address',
     initialState: {
@@ -54,6 +65,10 @@ const addressSlice = createSlice({
             })
             .addCase(createAddress.fulfilled, (state, action) => {
                 state.list.push(action.payload)
+            })
+            .addCase(updateAddress.fulfilled, (state, action) => {
+                const idx = state.list.findIndex(a => a.id === action.payload.id)
+                if (idx !== -1) state.list[idx] = action.payload
             })
     },
 })
