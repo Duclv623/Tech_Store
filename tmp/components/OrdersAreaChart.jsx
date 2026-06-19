@@ -34,11 +34,9 @@ export default function OrdersAreaChart({ allOrders = [] }) {
     // If no data, show empty state
     if (chartData.length === 0) {
         return (
-            <div className="w-full max-w-4xl h-[300px] text-xs">
-                <h3 className="text-lg font-medium text-slate-800 mb-4 pt-2 text-right">
-                    <span className='text-slate-500'>Đơn hàng /</span> Ngày
-                </h3>
-                <div className="flex items-center justify-center h-full text-slate-400">
+            <div className="w-full h-[300px] text-xs">
+                <h3 className="text-base font-semibold text-slate-800 mb-4">Đơn hàng theo ngày</h3>
+                <div className="flex items-center justify-center h-[230px] text-slate-400">
                     <p>Chưa có dữ liệu đơn hàng</p>
                 </div>
             </div>
@@ -46,15 +44,24 @@ export default function OrdersAreaChart({ allOrders = [] }) {
     }
 
     return (
-        <div className="w-full max-w-4xl h-[300px] text-xs">
-            <h3 className="text-lg font-medium text-slate-800 mb-4 pt-2 text-right"> <span className='text-slate-500'>Đơn hàng /</span> Ngày</h3>
-            <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis allowDecimals={false} label={{ value: 'Đơn hàng', angle: -90, position: 'insideLeft' }} />
-                    <Tooltip />
-                    <Area type="monotone" dataKey="orders" stroke="#4f46e5" fill="#8884d8" strokeWidth={2} />
+        <div className="w-full h-[300px] text-xs">
+            <h3 className="text-base font-semibold text-slate-800 mb-4">Đơn hàng theo ngày</h3>
+            <ResponsiveContainer width="100%" height="88%">
+                <AreaChart data={chartData} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
+                    <defs>
+                        <linearGradient id="ordersFill" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#6366f1" stopOpacity={0.35} />
+                            <stop offset="100%" stopColor="#6366f1" stopOpacity={0} />
+                        </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                    <XAxis dataKey="date" tick={{ fill: '#94a3b8' }} tickLine={false} axisLine={{ stroke: '#e2e8f0' }} />
+                    <YAxis allowDecimals={false} tick={{ fill: '#94a3b8' }} tickLine={false} axisLine={false} width={30} />
+                    <Tooltip
+                        contentStyle={{ borderRadius: 12, border: '1px solid #e2e8f0', fontSize: 12, boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}
+                        labelStyle={{ color: '#475569', fontWeight: 600 }}
+                    />
+                    <Area type="monotone" dataKey="orders" stroke="#6366f1" fill="url(#ordersFill)" strokeWidth={2.5} />
                 </AreaChart>
             </ResponsiveContainer>
         </div>
