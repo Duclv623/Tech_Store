@@ -194,7 +194,13 @@ export const storesAPI = {
 
 // Admin API
 export const adminAPI = {
-    getDashboard: () => apiCall('/admin/dashboard'),
+    getDashboard: (from, to) => {
+        const params = new URLSearchParams();
+        if (from) params.append('from', from);
+        if (to) params.append('to', to);
+        const qs = params.toString();
+        return apiCall(`/admin/dashboard${qs ? `?${qs}` : ''}`);
+    },
 };
 
 // Addresses API

@@ -5,11 +5,27 @@ import OrdersAreaChart from "@/components/OrdersAreaChart"
 import { CircleDollarSignIcon, ShoppingBasketIcon, StoreIcon, TagsIcon, TrendingUpIcon } from "lucide-react"
 import { useEffect, useState } from "react"
 
+// Định dạng Date -> YYYY-MM-DD theo giờ local (tránh lệch ngày do UTC)
+const fmt = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+
+// Các mốc lọc nhanh
+const PRESETS = {
+    '7d': () => { const to = new Date(); const from = new Date(); from.setDate(from.getDate() - 6); return { from: fmt(from), to: fmt(to) } },
+    '30d': () => { const to = new Date(); const from = new Date(); from.setDate(from.getDate() - 29); return { from: fmt(from), to: fmt(to) } },
+    'month': () => { const to = new Date(); const from = new Date(to.getFullYear(), to.getMonth(), 1); return { from: fmt(from), to: fmt(to) } },
+    'all': () => ({ from: '', to: '' }),
+}
+
+const PRESET_LABELS = [['7d', '7 ngày'], ['30d', '30 ngày'], ['month', 'Tháng này'], ['all', 'Tất cả']]
+
 export default function AdminDashboard() {
 
     const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || '$'
 
     const [loading, setLoading] = useState(true)
+    const [activePreset, setActivePreset] = useState('all')
+    const [from, setFrom] = useState('')
+    const [to, setTo] = useState('')
     const [dashboardData, setDashboardData] = useState({
         products: 0,
         revenue: 0,
@@ -26,10 +42,10 @@ export default function AdminDashboard() {
         { title: 'Tổng cửa hàng', value: dashboardData.stores, icon: StoreIcon, iconBg: 'bg-amber-50', iconColor: 'text-amber-600' },
     ]
 
-    const fetchDashboardData = async () => {
+    const fetchDashboardData = async (fromArg = '', toArg = '') => {
         try {
             const { adminAPI } = await import('@/lib/api');
-            const data = await adminAPI.getDashboard();
+            const data = await adminAPI.getDashboard(fromArg, toArg);
             setDashboardData({
                 products: data.products || 0,
                 revenue: data.revenue || 0,
@@ -51,6 +67,21 @@ export default function AdminDashboard() {
         fetchDashboardData()
     }, [])
 
+    // Chọn mốc nhanh
+    const applyPreset = (key) => {
+        const { from: f, to: t } = PRESETS[key]()
+        setActivePreset(key)
+        setFrom(f)
+        setTo(t)
+        fetchDashboardData(f, t)
+    }
+
+    // Áp dụng khoảng ngày tùy chọn
+    const applyCustom = () => {
+        setActivePreset('custom')
+        fetchDashboardData(from, to)
+    }
+
     if (loading) return <Loading />
 
     const maxSold = Math.max(...dashboardData.topProducts.map(p => p.totalSold || 0), 1)
@@ -69,6 +100,42 @@ export default function AdminDashboard() {
             <div>
                 <h1 className="text-2xl font-semibold text-slate-800">Bảng điều khiển</h1>
                 <p className="text-sm text-slate-400 mt-1">Tổng quan hoạt động cửa hàng</p>
+            </div>
+
+            {/* Bộ lọc thời gian */}
+            <div className="flex flex-wrap items-center gap-2 mt-5">
+                {PRESET_LABELS.map(([key, label]) => (
+                    <button
+                        key={key}
+                        onClick={() => applyPreset(key)}
+                        className={`px-3 py-1.5 rounded-lg text-sm border transition ${activePreset === key
+                            ? 'bg-indigo-600 text-white border-indigo-600'
+                            : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
+                    >
+                        {label}
+                    </button>
+                ))}
+                <div className="flex items-center gap-2 sm:ml-auto">
+                    <input
+                        type="date"
+                        value={from}
+                        onChange={e => setFrom(e.target.value)}
+                        className="border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-600 outline-none focus:border-indigo-400"
+                    />
+                    <span className="text-slate-400">→</span>
+                    <input
+                        type="date"
+                        value={to}
+                        onChange={e => setTo(e.target.value)}
+                        className="border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-600 outline-none focus:border-indigo-400"
+                    />
+                    <button
+                        onClick={applyCustom}
+                        className="px-4 py-1.5 rounded-lg text-sm bg-slate-800 text-white hover:bg-slate-900 active:scale-95 transition"
+                    >
+                        Áp dụng
+                    </button>
+                </div>
             </div>
 
             {/* Stat cards */}

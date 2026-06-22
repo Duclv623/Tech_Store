@@ -14,6 +14,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,42 +33,52 @@ public class AdminController {
     private final OrderItemRepository orderItemRepository;
 
     /**
-     * Lấy thống kê tổng quan cho admin dashboard
-     * GET /api/admin/dashboard
+     * Thống kê tổng quan cho admin dashboard, có lọc theo khoảng thời gian.
+     * GET /api/admin/dashboard?from=YYYY-MM-DD&to=YYYY-MM-DD
+     * from/to là tùy chọn; bỏ trống = không giới hạn (toàn bộ thời gian).
+     * Các chỉ số theo thời gian (đơn hàng, doanh thu, biểu đồ, sản phẩm bán chạy)
+     * được lọc theo khoảng; tổng số sản phẩm/cửa hàng giữ nguyên là tổng toàn hệ thống.
      */
     @GetMapping("/dashboard")
-    public ResponseEntity<Map<String, Object>> getDashboardStats() {
+    public ResponseEntity<Map<String, Object>> getDashboardStats(
+            @RequestParam(required = false) String from,
+            @RequestParam(required = false) String to) {
+
+        final LocalDateTime fromDt = (from != null && !from.isBlank())
+                ? LocalDate.parse(from).atStartOfDay() : null;
+        final LocalDateTime toDt = (to != null && !to.isBlank())
+                ? LocalDate.parse(to).atTime(LocalTime.MAX) : null;
+
         Map<String, Object> stats = new HashMap<>();
-        
-        // Tổng số products
-        long totalProducts = productRepository.count();
-        stats.put("products", totalProducts);
-        
-        // Tổng số stores
-        long totalStores = storeRepository.count();
-        stats.put("stores", totalStores);
-        
-        // Tổng số orders
-        long totalOrders = orderRepository.count();
-        stats.put("orders", totalOrders);
-        
-        // Tổng revenue: chỉ tính đơn đã thanh toán VÀ chưa bị hủy
-        List<Order> paidOrders = orderRepository.findByIsPaidTrue();
-        double totalRevenue = paidOrders.stream()
+
+        // Tổng số sản phẩm / cửa hàng — tổng toàn hệ thống (không theo thời gian)
+        stats.put("products", productRepository.count());
+        stats.put("stores", storeRepository.count());
+
+        // Lọc đơn hàng theo khoảng thời gian
+        List<Order> orders = orderRepository.findAll().stream()
+                .filter(o -> inRange(o.getCreatedAt(), fromDt, toDt))
+                .toList();
+
+        // Số đơn trong khoảng
+        stats.put("orders", orders.size());
+
+        // Doanh thu: đơn đã thanh toán & chưa hủy, trong khoảng
+        double revenue = orders.stream()
+                .filter(o -> Boolean.TRUE.equals(o.getIsPaid()))
                 .filter(o -> o.getStatus() != OrderStatus.CANCELLED)
-                .mapToDouble(order -> order.getTotal() != null ? order.getTotal() : 0.0)
+                .mapToDouble(o -> o.getTotal() != null ? o.getTotal() : 0.0)
                 .sum();
-        stats.put("revenue", totalRevenue);
-        
-        // Tất cả orders (để vẽ chart) — map sang DTO để tránh recursion
-        List<OrderResponse> allOrders = orderRepository.findAll().stream()
+        stats.put("revenue", revenue);
+
+        // Tất cả đơn trong khoảng (để vẽ chart) — map sang DTO tránh recursion
+        List<OrderResponse> allOrders = orders.stream()
                 .map(OrderResponse::from)
                 .toList();
         stats.put("allOrders", allOrders);
 
-        // Top 5 sản phẩm bán chạy (theo số lượng đã bán, bỏ đơn đã hủy)
-        List<TopProductDto> topProducts = orderItemRepository.findTopSelling(PageRequest.of(0, 5));
-        // Gán ảnh đại diện cho mỗi sản phẩm
+        // Top 5 sản phẩm bán chạy trong khoảng (bỏ đơn đã hủy)
+        List<TopProductDto> topProducts = orderItemRepository.findTopSelling(fromDt, toDt, PageRequest.of(0, 5));
         if (!topProducts.isEmpty()) {
             List<String> ids = topProducts.stream().map(TopProductDto::getProductId).toList();
             Map<String, Product> productMap = productRepository.findAllById(ids).stream()
@@ -81,5 +94,11 @@ public class AdminController {
 
         return ResponseEntity.ok(stats);
     }
-}
 
+    private boolean inRange(LocalDateTime when, LocalDateTime from, LocalDateTime to) {
+        if (when == null) return false;
+        if (from != null && when.isBefore(from)) return false;
+        if (to != null && when.isAfter(to)) return false;
+        return true;
+    }
+}
