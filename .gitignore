@@ -21,3 +21,6 @@ target/
 .classpath
 .project
 .settings/
+
+# Claude Code local settings
+.claude/
