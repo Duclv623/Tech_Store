@@ -44,10 +44,13 @@ public class AdminController {
             @RequestParam(required = false) String from,
             @RequestParam(required = false) String to) {
 
+        // Không chọn ngày -> dùng mốc rất rộng (tránh tham số null trên PostgreSQL)
         final LocalDateTime fromDt = (from != null && !from.isBlank())
-                ? LocalDate.parse(from).atStartOfDay() : null;
+                ? LocalDate.parse(from).atStartOfDay()
+                : LocalDateTime.of(1970, 1, 1, 0, 0);
         final LocalDateTime toDt = (to != null && !to.isBlank())
-                ? LocalDate.parse(to).atTime(LocalTime.MAX) : null;
+                ? LocalDate.parse(to).atTime(LocalTime.MAX)
+                : LocalDateTime.of(2999, 12, 31, 23, 59, 59);
 
         Map<String, Object> stats = new HashMap<>();
 

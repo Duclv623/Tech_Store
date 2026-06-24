@@ -15,15 +15,17 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, OrderItemI
 
     /**
      * Top sản phẩm bán chạy: tổng số lượng & doanh thu theo sản phẩm,
-     * bỏ qua đơn đã hủy, lọc theo khoảng thời gian (from/to có thể null = không giới hạn).
+     * bỏ qua đơn đã hủy, trong khoảng [from, to].
+     * Khi không lọc, controller truyền mốc rất rộng (1970..2999) — tránh tham số null
+     * gây lỗi "could not determine data type" trên PostgreSQL.
      * Dùng Pageable để giới hạn top N.
      */
     @Query("SELECT new com.gocart.dto.TopProductDto(oi.product.id, oi.product.name, " +
             "SUM(oi.quantity), SUM(oi.quantity * oi.price)) " +
             "FROM OrderItem oi " +
             "WHERE oi.order.status <> com.gocart.model.OrderStatus.CANCELLED " +
-            "AND (:from IS NULL OR oi.order.createdAt >= :from) " +
-            "AND (:to IS NULL OR oi.order.createdAt <= :to) " +
+            "AND oi.order.createdAt >= :from " +
+            "AND oi.order.createdAt <= :to " +
             "GROUP BY oi.product.id, oi.product.name " +
             "ORDER BY SUM(oi.quantity) DESC")
     List<TopProductDto> findTopSelling(@Param("from") LocalDateTime from,
