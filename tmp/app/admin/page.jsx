@@ -56,8 +56,15 @@ export default function AdminDashboard() {
             });
         } catch (error) {
             console.error('Error fetching dashboard data:', error);
-            // Fallback to dummy data on error
-            setDashboardData(dummyAdminDashboardData);
+            // Fallback to dummy data on error — đảm bảo đủ field để tránh undefined.map
+            setDashboardData({
+                products: dummyAdminDashboardData?.products || 0,
+                revenue: dummyAdminDashboardData?.revenue || 0,
+                orders: dummyAdminDashboardData?.orders || 0,
+                stores: dummyAdminDashboardData?.stores || 0,
+                allOrders: dummyAdminDashboardData?.allOrders || [],
+                topProducts: dummyAdminDashboardData?.topProducts || [],
+            });
         } finally {
             setLoading(false);
         }
@@ -84,7 +91,7 @@ export default function AdminDashboard() {
 
     if (loading) return <Loading />
 
-    const maxSold = Math.max(...dashboardData.topProducts.map(p => p.totalSold || 0), 1)
+    const maxSold = Math.max(...(dashboardData.topProducts || []).map(p => p.totalSold || 0), 1)
 
     // Màu huy hiệu cho 3 hạng đầu
     const rankClass = (i) => {
