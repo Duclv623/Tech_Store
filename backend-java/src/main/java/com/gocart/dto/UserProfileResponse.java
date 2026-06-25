@@ -16,6 +16,7 @@ public class UserProfileResponse {
     private String phone;
     private String bio;
     private String address;
+    private String role;
 
     public static UserProfileResponse from(User u) {
         return new UserProfileResponse(
@@ -25,7 +26,8 @@ public class UserProfileResponse {
                 u.getImage(),
                 u.getPhone(),
                 u.getBio(),
-                u.getAddress()
+                u.getAddress(),
+                u.getRole() != null ? u.getRole().name() : "USER"
         );
     }
 }
