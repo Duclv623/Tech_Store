@@ -2,13 +2,16 @@ package com.gocart.controller;
 
 import com.gocart.dto.OrderResponse;
 import com.gocart.dto.TopProductDto;
+import com.gocart.dto.UserProfileResponse;
 import com.gocart.model.Order;
 import com.gocart.model.OrderStatus;
 import com.gocart.model.Product;
+import com.gocart.model.UserRole;
 import com.gocart.repository.OrderItemRepository;
 import com.gocart.repository.OrderRepository;
 import com.gocart.repository.ProductRepository;
 import com.gocart.repository.StoreRepository;
+import com.gocart.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +34,7 @@ public class AdminController {
     private final OrderRepository orderRepository;
     private final StoreRepository storeRepository;
     private final OrderItemRepository orderItemRepository;
+    private final UserRepository userRepository;
 
     /**
      * Thống kê tổng quan cho admin dashboard, có lọc theo khoảng thời gian.
@@ -103,5 +107,48 @@ public class AdminController {
         if (from != null && when.isBefore(from)) return false;
         if (to != null && when.isAfter(to)) return false;
         return true;
+    }
+
+    // ── User Management ──
+
+    @GetMapping("/users")
+    public ResponseEntity<List<UserProfileResponse>> getAllUsers() {
+        List<UserProfileResponse> users = userRepository.findAll().stream()
+                .map(UserProfileResponse::from).toList();
+        return ResponseEntity.ok(users);
+    }
+
+    @GetMapping("/users/{id}")
+    public ResponseEntity<UserProfileResponse> getUserById(@PathVariable String id) {
+        return userRepository.findById(id)
+                .map(u -> ResponseEntity.ok(UserProfileResponse.from(u)))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PatchMapping("/users/{id}/role")
+    public ResponseEntity<?> updateUserRole(@PathVariable String id, @RequestBody Map<String, String> body) {
+        String roleName = body.get("role");
+        if (roleName == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Thiếu trường role"));
+        }
+        try {
+            UserRole role = UserRole.valueOf(roleName.toUpperCase());
+            return userRepository.findById(id).map(user -> {
+                user.setRole(role);
+                userRepository.save(user);
+                return ResponseEntity.ok(UserProfileResponse.from(user));
+            }).orElse(ResponseEntity.notFound().build());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Role không hợp lệ: " + roleName));
+        }
+    }
+
+    @DeleteMapping("/users/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable String id) {
+        if (!userRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+        userRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 }

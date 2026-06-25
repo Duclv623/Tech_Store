@@ -1,7 +1,7 @@
 'use client'
 
 import { usePathname } from "next/navigation"
-import { HomeIcon, PackageIcon, ShieldCheckIcon, StoreIcon, TicketPercentIcon } from "lucide-react"
+import { HomeIcon, PackageIcon, ShieldCheckIcon, StoreIcon, TicketPercentIcon, UsersIcon } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { assets } from "@/assets/assets"
@@ -12,10 +12,11 @@ const AdminSidebar = () => {
 
     const sidebarLinks = [
         { name: 'Bảng điều khiển', href: '/admin', icon: HomeIcon },
+        { name: 'Người dùng', href: '/admin/users', icon: UsersIcon },
         { name: 'Cửa hàng', href: '/admin/stores', icon: StoreIcon },
         { name: 'Duyệt cửa hàng', href: '/admin/approve', icon: ShieldCheckIcon },
         { name: 'Đơn hàng', href: '/admin/orders', icon: PackageIcon },
-        { name: 'Mã giảm giá', href: '/admin/coupons', icon: TicketPercentIcon  },
+        { name: 'Mã giảm giá', href: '/admin/coupons', icon: TicketPercentIcon },
     ]
 
     return (

@@ -201,6 +201,15 @@ export const adminAPI = {
         const qs = params.toString();
         return apiCall(`/admin/dashboard${qs ? `?${qs}` : ''}`);
     },
+    getUsers: () => apiCall('/admin/users'),
+    getUserById: (id) => apiCall(`/admin/users/${id}`),
+    updateUserRole: (id, role) => apiCall(`/admin/users/${id}/role`, {
+        method: 'PATCH',
+        body: JSON.stringify({ role }),
+    }),
+    deleteUser: (id) => apiCall(`/admin/users/${id}`, {
+        method: 'DELETE',
+    }),
 };
 
 // Addresses API
