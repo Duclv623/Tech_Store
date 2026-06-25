@@ -20,6 +20,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
 @RestController
 @RequestMapping("/api/stores")
 @RequiredArgsConstructor
@@ -126,28 +128,40 @@ public class StoreController {
     }
 
     @PostMapping
-    public ResponseEntity<Store> createStore(@RequestBody Store store) {
+    public ResponseEntity<?> createStore(@RequestBody Store store, Authentication auth) {
+        if (auth == null) return ResponseEntity.status(401).body("Unauthorized");
+        // Gán userId = người đang login (không cho tạo store cho người khác)
+        store.setUserId(auth.getName());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(storeService.createStore(store));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Store> updateStore(@PathVariable String id, @RequestBody Store store) {
-        try {
-            return ResponseEntity.ok(storeService.updateStore(id, store));
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<?> updateStore(@PathVariable String id, @RequestBody Store store, Authentication auth) {
+        return storeService.getStoreById(id).map(existing -> {
+            if (!isOwnerOrAdmin(auth, existing)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body((Object) "Bạn không có quyền sửa cửa hàng này");
+            }
+            return ResponseEntity.ok((Object) storeService.updateStore(id, store));
+        }).orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteStore(@PathVariable String id) {
-        storeService.deleteStore(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> deleteStore(@PathVariable String id, Authentication auth) {
+        return storeService.getStoreById(id).map(existing -> {
+            if (!isOwnerOrAdmin(auth, existing)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Bạn không có quyền xóa cửa hàng này");
+            }
+            storeService.deleteStore(id);
+            return ResponseEntity.noContent().build();
+        }).orElse(ResponseEntity.notFound().build());
     }
 
     @PatchMapping("/{id}/toggle-active")
-    public ResponseEntity<Store> toggleStoreStatus(@PathVariable String id) {
+    public ResponseEntity<?> toggleStoreStatus(@PathVariable String id, Authentication auth) {
+        if (!isAdmin(auth)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Chỉ admin mới được thay đổi trạng thái cửa hàng");
+        }
         try {
             return ResponseEntity.ok(storeService.toggleStoreStatus(id));
         } catch (RuntimeException e) {
@@ -156,14 +170,28 @@ public class StoreController {
     }
 
     @PatchMapping("/{id}/status")
-    public ResponseEntity<Store> updateStoreStatus(
+    public ResponseEntity<?> updateStoreStatus(
             @PathVariable String id,
-            @RequestParam String status) {
+            @RequestParam String status,
+            Authentication auth) {
+        if (!isAdmin(auth)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Chỉ admin mới được thay đổi trạng thái cửa hàng");
+        }
         try {
             return ResponseEntity.ok(storeService.updateStoreStatus(id, status));
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    private boolean isAdmin(Authentication auth) {
+        return auth != null && auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"));
+    }
+
+    private boolean isOwnerOrAdmin(Authentication auth, Store store) {
+        if (auth == null) return false;
+        if (isAdmin(auth)) return true;
+        return store.getUserId().equals(auth.getName());
     }
 }
 

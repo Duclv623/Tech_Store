@@ -19,8 +19,10 @@ public class UserController {
     private final UserRepository userRepository;
 
     @GetMapping
-    public ResponseEntity<List<User>> getAllUsers() {
-        return ResponseEntity.ok(userRepository.findAll());
+    public ResponseEntity<List<UserProfileResponse>> getAllUsers() {
+        List<UserProfileResponse> users = userRepository.findAll().stream()
+                .map(UserProfileResponse::from).toList();
+        return ResponseEntity.ok(users);
     }
 
     @GetMapping("/profile")
@@ -55,16 +57,16 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable String id) {
+    public ResponseEntity<UserProfileResponse> getUserById(@PathVariable String id) {
         return userRepository.findById(id)
-                .map(ResponseEntity::ok)
+                .map(u -> ResponseEntity.ok(UserProfileResponse.from(u)))
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/email/{email}")
-    public ResponseEntity<User> getUserByEmail(@PathVariable String email) {
+    public ResponseEntity<UserProfileResponse> getUserByEmail(@PathVariable String email) {
         return userRepository.findByEmail(email)
-                .map(ResponseEntity::ok)
+                .map(u -> ResponseEntity.ok(UserProfileResponse.from(u)))
                 .orElse(ResponseEntity.notFound().build());
     }
 

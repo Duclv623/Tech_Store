@@ -4,11 +4,14 @@ import com.gocart.dto.CreateOrderRequest;
 import com.gocart.dto.OrderResponse;
 import com.gocart.model.Order;
 import com.gocart.model.OrderStatus;
+import com.gocart.model.Store;
+import com.gocart.repository.StoreRepository;
 import com.gocart.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,6 +22,7 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 public class OrderController {
     private final OrderService orderService;
+    private final StoreRepository storeRepository;
 
     @GetMapping("/me")
     public ResponseEntity<?> getMyOrders(Authentication auth) {
@@ -64,14 +68,21 @@ public class OrderController {
     }
 
     @GetMapping("/store/{storeId}")
-    public ResponseEntity<List<OrderResponse>> getOrdersByStore(@PathVariable String storeId) {
+    public ResponseEntity<?> getOrdersByStore(@PathVariable String storeId, Authentication auth) {
+        if (!isStoreOwnerOrAdmin(auth, storeId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Bạn không có quyền xem đơn hàng của cửa hàng này");
+        }
         return ResponseEntity.ok(orderService.getOrdersByStore(storeId).stream().map(OrderResponse::from).toList());
     }
 
     @GetMapping("/store/{storeId}/status/{status}")
-    public ResponseEntity<List<OrderResponse>> getOrdersByStoreAndStatus(
+    public ResponseEntity<?> getOrdersByStoreAndStatus(
             @PathVariable String storeId,
-            @PathVariable OrderStatus status) {
+            @PathVariable OrderStatus status,
+            Authentication auth) {
+        if (!isStoreOwnerOrAdmin(auth, storeId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Bạn không có quyền xem đơn hàng của cửa hàng này");
+        }
         return ResponseEntity.ok(orderService.getOrdersByStoreAndStatus(storeId, status)
                 .stream().map(OrderResponse::from).toList());
     }
@@ -83,10 +94,16 @@ public class OrderController {
     }
 
     @PatchMapping("/{id}/status")
-    public ResponseEntity<OrderResponse> updateOrderStatus(
+    public ResponseEntity<?> updateOrderStatus(
             @PathVariable String id,
-            @RequestBody OrderStatus status) {
+            @RequestBody OrderStatus status,
+            Authentication auth) {
         try {
+            Order order = orderService.getOrderById(id).orElse(null);
+            if (order == null) return ResponseEntity.notFound().build();
+            if (!isStoreOwnerOrAdmin(auth, order.getStoreId())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Bạn không có quyền cập nhật đơn hàng này");
+            }
             return ResponseEntity.ok(OrderResponse.from(orderService.updateOrderStatus(id, status)));
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
@@ -94,10 +111,16 @@ public class OrderController {
     }
 
     @PatchMapping("/{id}/paid")
-    public ResponseEntity<OrderResponse> updatePaymentStatus(
+    public ResponseEntity<?> updatePaymentStatus(
             @PathVariable String id,
-            @RequestBody Boolean isPaid) {
+            @RequestBody Boolean isPaid,
+            Authentication auth) {
         try {
+            Order order = orderService.getOrderById(id).orElse(null);
+            if (order == null) return ResponseEntity.notFound().build();
+            if (!isStoreOwnerOrAdmin(auth, order.getStoreId())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Bạn không có quyền cập nhật đơn hàng này");
+            }
             return ResponseEntity.ok(OrderResponse.from(
                     orderService.updatePaymentStatus(id, Boolean.TRUE.equals(isPaid))));
         } catch (RuntimeException e) {
@@ -109,5 +132,12 @@ public class OrderController {
     public ResponseEntity<Void> deleteOrder(@PathVariable String id) {
         orderService.deleteOrder(id);
         return ResponseEntity.noContent().build();
+    }
+
+    private boolean isStoreOwnerOrAdmin(Authentication auth, String storeId) {
+        if (auth == null) return false;
+        if (auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) return true;
+        Store store = storeRepository.findById(storeId).orElse(null);
+        return store != null && store.getUserId().equals(auth.getName());
     }
 }

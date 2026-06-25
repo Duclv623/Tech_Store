@@ -1,10 +1,14 @@
 package com.gocart.controller;
 
 import com.gocart.model.Product;
+import com.gocart.model.Store;
+import com.gocart.repository.StoreRepository;
 import com.gocart.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,6 +19,7 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 public class ProductController {
     private final ProductService productService;
+    private final StoreRepository storeRepository;
 
     @GetMapping
     public ResponseEntity<List<Product>> getAllProducts() {
@@ -49,24 +54,42 @@ public class ProductController {
     }
 
     @PostMapping
-    public ResponseEntity<Product> createProduct(@RequestBody Product product) {
+    public ResponseEntity<?> createProduct(@RequestBody Product product, Authentication auth) {
+        if (!isOwnerOrAdmin(auth, product.getStoreId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Bạn không có quyền thêm sản phẩm cho cửa hàng này");
+        }
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(productService.createProduct(product));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Product> updateProduct(@PathVariable String id, @RequestBody Product product) {
-        try {
-            return ResponseEntity.ok(productService.updateProduct(id, product));
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<?> updateProduct(@PathVariable String id, @RequestBody Product product, Authentication auth) {
+        return productService.getProductById(id).map(existing -> {
+            if (!isOwnerOrAdmin(auth, existing.getStoreId())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body((Object) "Bạn không có quyền sửa sản phẩm này");
+            }
+            return ResponseEntity.ok((Object) productService.updateProduct(id, product));
+        }).orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProduct(@PathVariable String id) {
-        productService.deleteProduct(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> deleteProduct(@PathVariable String id, Authentication auth) {
+        return productService.getProductById(id).map(existing -> {
+            if (!isOwnerOrAdmin(auth, existing.getStoreId())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Bạn không có quyền xóa sản phẩm này");
+            }
+            productService.deleteProduct(id);
+            return ResponseEntity.noContent().build();
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    /** Kiểm tra user hiện tại có phải chủ store hoặc ADMIN không */
+    private boolean isOwnerOrAdmin(Authentication auth, String storeId) {
+        if (auth == null) return false;
+        if (auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) return true;
+        Store store = storeRepository.findById(storeId).orElse(null);
+        return store != null && store.getUserId().equals(auth.getName());
     }
 }
+
 
