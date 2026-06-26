@@ -1,32 +1,39 @@
 'use client'
 import { useEffect, useState } from "react"
-import { useSelector } from "react-redux"
 import { useRouter } from "next/navigation"
 import Loading from "../Loading"
 import Link from "next/link"
 import { ArrowRightIcon } from "lucide-react"
 import AdminNavbar from "./AdminNavbar"
 import AdminSidebar from "./AdminSidebar"
+import { authStorage } from "@/lib/api"
 
 const AdminLayout = ({ children }) => {
 
     const router = useRouter()
-    const { user, token } = useSelector((state) => state.auth)
+    const [isAdmin, setIsAdmin] = useState(false)
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        // Chưa login → redirect về login
+        // Đọc thẳng từ localStorage (đồng bộ) để tránh race với hydrate Redux khi reload
+        const token = authStorage.getToken()
+        const user = authStorage.getUser()
+
+        // Chưa đăng nhập -> về trang đăng nhập
         if (!token) {
             router.replace('/login')
             return
         }
+
+        // Đã đăng nhập nhưng không phải ADMIN -> hiển thị trang "không có quyền"
+        setIsAdmin(user?.role === 'ADMIN')
         setLoading(false)
-    }, [token, router])
+    }, [router])
 
     if (loading) return <Loading />
 
     // Đã login nhưng không phải ADMIN
-    if (user?.role !== 'ADMIN') {
+    if (!isAdmin) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center text-center px-6">
                 <h1 className="text-2xl sm:text-4xl font-semibold text-slate-400">Bạn không có quyền truy cập trang này</h1>
