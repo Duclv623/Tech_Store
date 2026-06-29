@@ -37,11 +37,19 @@ services:
       MAIL_USERNAME: ${MAIL_USERNAME:-}
       MAIL_PASSWORD: ${MAIL_PASSWORD:-}
       MAIL_FROM: ${MAIL_FROM:-}
+      # MinIO: endpoint nội bộ qua mạng Docker; public-url để browser xem ảnh
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_PUBLIC_URL: ${MINIO_PUBLIC_URL:-http://localhost:9000}
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-admin123}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-admin123}
+      MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME:-gocart}
     ports:
       - "8080:8080"
     depends_on:
       postgres:
         condition: service_healthy
+      minio:
+        condition: service_started
     networks:
       - gocart-network
     restart: unless-stopped

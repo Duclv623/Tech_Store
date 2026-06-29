@@ -73,6 +73,9 @@ public class SecurityConfig {
                         // ── Stores: GET public, CUD authenticated (ownership checked in controller) ──
                         .requestMatchers(new AntPathRequestMatcher("/api/stores/**", HttpMethod.GET.name())).permitAll()
 
+                        // ── Upload ảnh: cần đăng nhập ──
+                        .requestMatchers(new AntPathRequestMatcher("/api/upload/**", HttpMethod.POST.name())).authenticated()
+
                         // ── WebSocket & infra ──
                         .requestMatchers(new AntPathRequestMatcher("/ws/**")).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/actuator/health")).permitAll()
