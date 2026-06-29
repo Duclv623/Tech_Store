@@ -120,6 +120,12 @@
         </dependency>
     </dependencies>
 
+        <!--MinIO-->
+    <dependency>
+        <groupId>io.minio</groupId>
+        <artifactId>minio</artifactId>
+        <version>8.5.3</version>
+    </dependency>   
     <build>
         <plugins>
             <plugin>
