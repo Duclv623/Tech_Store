@@ -1,6 +1,6 @@
 'use client'
 import { assets } from "@/assets/assets"
-import { categoriesAPI } from "@/lib/api"
+import { authStorage, categoriesAPI, productsAPI, storesAPI, uploadAPI } from "@/lib/api"
 import Image from "next/image"
 import { useEffect, useState } from "react"
 import { toast } from "react-hot-toast"
@@ -31,13 +31,51 @@ export default function StoreAddProduct() {
 
     const onSubmitHandler = async (e) => {
         e.preventDefault()
-        // Logic to add a product
-        
+
+        // 1) Gom các file ảnh đã chọn
+        const files = Object.values(images).filter(Boolean)
+        if (files.length === 0) {
+            throw new Error("Vui lòng chọn ít nhất 1 ảnh sản phẩm")
+        }
+
+        setLoading(true)
+        try {
+            // 2) Lấy store của seller hiện tại
+            const user = authStorage.getUser()
+            if (!user?.id) throw new Error("Chưa đăng nhập")
+            const store = await storesAPI.getByUserId(user.id)
+            if (!store?.id) throw new Error("Bạn chưa có cửa hàng được duyệt")
+
+            // 3) Upload từng ảnh lên MinIO, lấy danh sách URL
+            const uploaded = await Promise.all(files.map(f => uploadAPI.image(f)))
+            const imageUrls = uploaded.map(r => r.url)
+
+            // 4) Tạo sản phẩm với URL ảnh
+            await productsAPI.create({
+                name: productInfo.name,
+                description: productInfo.description,
+                mrp: Number(productInfo.mrp),
+                price: Number(productInfo.price),
+                category: productInfo.category,
+                storeId: store.id,
+                images: imageUrls,
+            })
+
+            // 5) Reset form
+            setProductInfo({ name: "", description: "", mrp: 0, price: 0, category: "" })
+            setImages({ 1: null, 2: null, 3: null, 4: null })
+        } finally {
+            setLoading(false)
+        }
     }
 
 
     return (
-        <form onSubmit={e => toast.promise(onSubmitHandler(e), { loading: "Đang thêm sản phẩm..." })} className="text-slate-500 mb-28">
+        <form onSubmit={e => toast.promise(onSubmitHandler(e), {
+            loading: "Đang thêm sản phẩm...",
+            success: "Đã thêm sản phẩm thành công",
+            error: (err) => err?.message || "Thêm sản phẩm thất bại",
+        })} className="text-slate-500 mb-28">
             <h1 className="text-2xl">Thêm mới <span className="text-slate-800 font-medium">Sản phẩm</span></h1>
             <p className="mt-7">Hình ảnh sản phẩm</p>
 

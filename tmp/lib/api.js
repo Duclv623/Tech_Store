@@ -36,6 +36,11 @@ async function apiCall(endpoint, options = {}) {
         ...options,
     };
 
+    // Khi gửi FormData (upload file), để browser tự set Content-Type kèm boundary
+    if (config.body instanceof FormData) {
+        delete config.headers['Content-Type'];
+    }
+
     try {
         const response = await fetch(url, config);
 
@@ -109,6 +114,15 @@ export const productsAPI = {
     delete: (id) => apiCall(`/products/${id}`, {
         method: 'DELETE',
     }),
+};
+
+// Upload API (ảnh -> MinIO, trả về { url })
+export const uploadAPI = {
+    image: (file) => {
+        const fd = new FormData();
+        fd.append('file', file);
+        return apiCall('/upload', { method: 'POST', body: fd });
+    },
 };
 
 // Orders API
