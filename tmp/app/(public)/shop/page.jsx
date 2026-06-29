@@ -22,10 +22,13 @@ function ShopContent() {
 
     const products = useSelector(state => state.product.list)
 
+    const PAGE_SIZE = 12
+
     const [categories, setCategories] = useState([])
     const [selectedCategories, setSelectedCategories] = useState([])
     const [priceRange, setPriceRange] = useState({ min: '', max: '' })
     const [showFiltersMobile, setShowFiltersMobile] = useState(false)
+    const [page, setPage] = useState(1)
 
     useEffect(() => {
         categoriesAPI.getAll()
@@ -56,6 +59,15 @@ function ShopContent() {
             return true
         })
     }, [products, search, selectedCategories, priceRange])
+
+    // Đổi bộ lọc/tìm kiếm -> quay về trang 1
+    useEffect(() => {
+        setPage(1)
+    }, [search, selectedCategories, priceRange])
+
+    const totalPages = Math.max(1, Math.ceil(filteredProducts.length / PAGE_SIZE))
+    const currentPage = Math.min(page, totalPages)
+    const pagedProducts = filteredProducts.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
 
     const FilterPanel = (
         <div className="border border-slate-200 rounded-xl p-5 space-y-6 bg-white">
@@ -157,9 +169,40 @@ function ShopContent() {
                     <div className="flex-1">
                         <p className="text-sm text-slate-500 mb-4">Tìm thấy {filteredProducts.length} sản phẩm</p>
                         {filteredProducts.length > 0 ? (
+                            <>
                             <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
-                                {filteredProducts.map(p => <ProductCard key={p.id} product={p} />)}
+                                {pagedProducts.map(p => <ProductCard key={p.id} product={p} />)}
                             </div>
+                            {totalPages > 1 && (
+                                <div className="flex items-center justify-center gap-1 mt-8">
+                                    <button
+                                        onClick={() => setPage(p => Math.max(1, p - 1))}
+                                        disabled={currentPage === 1}
+                                        className="px-3 py-1.5 text-sm rounded border border-slate-200 disabled:opacity-40 hover:bg-slate-50"
+                                    >
+                                        Trước
+                                    </button>
+                                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
+                                        <button
+                                            key={n}
+                                            onClick={() => setPage(n)}
+                                            className={`px-3 py-1.5 text-sm rounded border transition ${n === currentPage
+                                                ? 'bg-slate-800 text-white border-slate-800'
+                                                : 'border-slate-200 hover:bg-slate-50'}`}
+                                        >
+                                            {n}
+                                        </button>
+                                    ))}
+                                    <button
+                                        onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                                        disabled={currentPage === totalPages}
+                                        className="px-3 py-1.5 text-sm rounded border border-slate-200 disabled:opacity-40 hover:bg-slate-50"
+                                    >
+                                        Sau
+                                    </button>
+                                </div>
+                            )}
+                            </>
                         ) : (
                             <div className="text-center py-20 text-slate-400 border border-dashed border-slate-200 rounded-xl">
                                 <p>Không tìm thấy sản phẩm phù hợp.</p>

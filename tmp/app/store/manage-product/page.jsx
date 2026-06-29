@@ -10,8 +10,11 @@ export default function StoreManageProducts() {
 
     const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || '$'
 
+    const PAGE_SIZE = 12
+
     const [loading, setLoading] = useState(true)
     const [products, setProducts] = useState([])
+    const [page, setPage] = useState(1)
 
     const fetchProducts = async () => {
         try {
@@ -42,6 +45,10 @@ export default function StoreManageProducts() {
 
     if (loading) return <Loading />
 
+    const totalPages = Math.max(1, Math.ceil(products.length / PAGE_SIZE))
+    const currentPage = Math.min(page, totalPages)
+    const pageProducts = products.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
+
     return (
         <>
             <h1 className="text-2xl text-slate-500 mb-5">Quản lý <span className="text-slate-800 font-medium">Sản phẩm</span></h1>
@@ -59,7 +66,7 @@ export default function StoreManageProducts() {
                     </tr>
                 </thead>
                 <tbody className="text-slate-700">
-                    {products.map((product) => (
+                    {pageProducts.map((product) => (
                         <tr key={product.id} className="border-t border-gray-200 hover:bg-gray-50">
                             <td className="px-4 py-3">
                                 <div className="flex gap-2 items-center">
@@ -81,6 +88,36 @@ export default function StoreManageProducts() {
                     ))}
                 </tbody>
             </table>
+            )}
+
+            {totalPages > 1 && (
+                <div className="flex items-center gap-1 mt-4">
+                    <button
+                        onClick={() => setPage(p => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                        className="px-3 py-1.5 text-sm rounded border border-slate-200 disabled:opacity-40 hover:bg-slate-50"
+                    >
+                        Trước
+                    </button>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
+                        <button
+                            key={n}
+                            onClick={() => setPage(n)}
+                            className={`px-3 py-1.5 text-sm rounded border transition ${n === currentPage
+                                ? 'bg-slate-800 text-white border-slate-800'
+                                : 'border-slate-200 hover:bg-slate-50'}`}
+                        >
+                            {n}
+                        </button>
+                    ))}
+                    <button
+                        onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                        disabled={currentPage === totalPages}
+                        className="px-3 py-1.5 text-sm rounded border border-slate-200 disabled:opacity-40 hover:bg-slate-50"
+                    >
+                        Sau
+                    </button>
+                </div>
             )}
         </>
     )
