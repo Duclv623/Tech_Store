@@ -30,15 +30,12 @@ public class RatingService {
     public Rating createRating(Rating rating) {
         Optional<Rating> existing = ratingRepository.findByUserIdAndProductIdAndOrderId(
                 rating.getUserId(), rating.getProductId(), rating.getOrderId());
-        
-        if (existing.isPresent()) {
-            Rating existingRating = existing.get();
-            existingRating.setRating(rating.getRating());
-            existingRating.setReview(rating.getReview());
-            return ratingRepository.save(existingRating);
-        }
-        
-        return ratingRepository.save(rating);
+
+        Rating existingRating = existing.orElse(rating);
+        existingRating.setRating(rating.getRating());
+        existingRating.setReview(rating.getReview());
+
+        return ratingRepository.save(existingRating);
     }
 
     public void deleteRating(String id) {
