@@ -10,6 +10,7 @@ import com.gocart.model.Product;
 import com.gocart.repository.OrderRepository;
 import com.gocart.repository.OrderStatusHistoryRepository;
 import com.gocart.repository.ProductRepository;
+import com.gocart.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +34,7 @@ public class OrderService {
     private final OrderStatusHistoryRepository historyRepository;
     private final SimpMessagingTemplate messagingTemplate;
     private final NotificationService notificationService;
+    private final UserRepository userRepository;
 
     private void logHistory(String orderId, OrderStatus newStatus, OrderStatus previous, String changedBy, String note) {
         OrderStatusHistory h = new OrderStatusHistory();
@@ -126,6 +129,11 @@ public class OrderService {
             logHistory(persisted.getId(), OrderStatus.ORDER_PLACED, null, userId, "Đơn hàng được tạo");
             created.add(persisted);
         }
+        userRepository.findById(userId).ifPresent(user -> {
+            user.setCart(new HashMap<>());
+            userRepository.save(user);
+        });
+
         return created;
     }
 

@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Map;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,6 +19,7 @@ public class UserProfileResponse {
     private String bio;
     private String address;
     private String role;
+    private Map<String, Object> cart;
 
     public static UserProfileResponse from(User u) {
         return new UserProfileResponse(
@@ -27,7 +30,8 @@ public class UserProfileResponse {
                 u.getPhone(),
                 u.getBio(),
                 u.getAddress(),
-                u.getRole() != null ? u.getRole().name() : "USER"
+                u.getRole() != null ? u.getRole().name() : "USER",
+                u.getCart()
         );
     }
 }

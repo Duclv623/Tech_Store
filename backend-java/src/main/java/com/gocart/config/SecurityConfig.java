@@ -64,6 +64,8 @@ public class SecurityConfig {
                         .requestMatchers(new AntPathRequestMatcher("/api/orders", HttpMethod.GET.name())).hasRole("ADMIN")
                         .requestMatchers(new AntPathRequestMatcher("/api/orders/**", HttpMethod.DELETE.name())).hasRole("ADMIN")
 
+                        .requestMatchers(new AntPathRequestMatcher("/api/cart/**")).authenticated()
+
                         // ── Products: GET public, CUD authenticated (ownership checked in controller) ──
                         .requestMatchers(new AntPathRequestMatcher("/api/products/**", HttpMethod.GET.name())).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/api/products/**", HttpMethod.POST.name())).authenticated()

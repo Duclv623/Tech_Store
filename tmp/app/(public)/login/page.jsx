@@ -6,6 +6,7 @@ import { useDispatch } from "react-redux";
 import toast from "react-hot-toast";
 import { authAPI } from "@/lib/api";
 import { setAuth } from "@/lib/features/auth/authSlice";
+import { mergeGuestCart } from "@/lib/features/cart/cartSlice";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -23,6 +24,7 @@ export default function LoginPage() {
         try {
             const res = await authAPI.login(form);
             dispatch(setAuth({ token: res.token, user: res.user }));
+            await dispatch(mergeGuestCart()).unwrap();
             toast.success(`Welcome back, ${res.user.name}!`);
             router.push('/');
         } catch (err) {

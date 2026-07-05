@@ -178,6 +178,22 @@ export const usersAPI = {
     }),
 };
 
+// Cart API
+export const cartAPI = {
+    get: () => apiCall('/cart'),
+    update: (items) => apiCall('/cart', {
+        method: 'PUT',
+        body: JSON.stringify({ items }),
+    }),
+    merge: (items) => apiCall('/cart/merge', {
+        method: 'POST',
+        body: JSON.stringify({ items }),
+    }),
+    clear: () => apiCall('/cart', {
+        method: 'DELETE',
+    }),
+};
+
 // Stores API
 export const storesAPI = {
     getAll: () => apiCall('/stores'),

@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react'
 import { Provider } from 'react-redux'
 import { makeStore } from '../lib/store'
 import { hydrateAuth } from '../lib/features/auth/authSlice'
+import { hydrateCart } from '../lib/features/cart/cartSlice'
 import { fetchWishlist } from '../lib/features/wishlist/wishlistSlice'
 import { authStorage } from '../lib/api'
 
@@ -14,6 +15,7 @@ export default function StoreProvider({ children }) {
 
   useEffect(() => {
     storeRef.current.dispatch(hydrateAuth())
+    storeRef.current.dispatch(hydrateCart())
     // Nếu user đã đăng nhập → tải wishlist ngay
     if (authStorage.getToken()) {
       storeRef.current.dispatch(fetchWishlist())
@@ -22,4 +24,3 @@ export default function StoreProvider({ children }) {
 
   return <Provider store={storeRef.current}>{children}</Provider>
 }
-

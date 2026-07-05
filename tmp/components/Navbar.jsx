@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import toast from "react-hot-toast";
 import { clearAuth } from "@/lib/features/auth/authSlice";
 import { clearAddresses } from "@/lib/features/address/addressSlice";
+import { hydrateCart } from "@/lib/features/cart/cartSlice";
 import { clearWishlist, selectWishlistCount } from "@/lib/features/wishlist/wishlistSlice";
 import NotificationBell from "@/components/NotificationBell";
 
@@ -38,6 +39,7 @@ const Navbar = () => {
         dispatch(clearAuth())
         dispatch(clearAddresses())
         dispatch(clearWishlist())
+        dispatch(hydrateCart())
         toast.success('Đã đăng xuất')
         router.push('/')
     }
