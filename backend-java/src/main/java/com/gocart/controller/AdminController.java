@@ -62,10 +62,8 @@ public class AdminController {
         stats.put("products", productRepository.count());
         stats.put("stores", storeRepository.count());
 
-        // Lọc đơn hàng theo khoảng thời gian
-        List<Order> orders = orderRepository.findAll().stream()
-                .filter(o -> inRange(o.getCreatedAt(), fromDt, toDt))
-                .toList();
+        // Lọc đơn hàng theo khoảng thời gian — filter ngay trong DB
+        List<Order> orders = orderRepository.findByCreatedAtBetween(fromDt, toDt);
 
         // Số đơn trong khoảng
         stats.put("orders", orders.size());
@@ -100,13 +98,6 @@ public class AdminController {
         stats.put("topProducts", topProducts);
 
         return ResponseEntity.ok(stats);
-    }
-
-    private boolean inRange(LocalDateTime when, LocalDateTime from, LocalDateTime to) {
-        if (when == null) return false;
-        if (from != null && when.isBefore(from)) return false;
-        if (to != null && when.isAfter(to)) return false;
-        return true;
     }
 
     // ── User Management ──
