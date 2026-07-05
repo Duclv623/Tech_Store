@@ -50,20 +50,34 @@ public class OrderController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<OrderResponse> getOrderById(@PathVariable String id) {
-        return orderService.getOrderById(id)
-                .map(OrderResponse::from)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<?> getOrderById(@PathVariable String id, Authentication auth) {
+        Order order = orderService.getOrderById(id).orElse(null);
+        if (order == null) return ResponseEntity.notFound().build();
+        if (!canViewOrder(auth, order)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Bạn không có quyền xem đơn hàng này");
+        }
+        return ResponseEntity.ok(OrderResponse.from(order));
     }
 
     @GetMapping("/{id}/history")
-    public ResponseEntity<?> getOrderHistory(@PathVariable String id) {
+    public ResponseEntity<?> getOrderHistory(@PathVariable String id, Authentication auth) {
+        Order order = orderService.getOrderById(id).orElse(null);
+        if (order == null) return ResponseEntity.notFound().build();
+        if (!canViewOrder(auth, order)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Bạn không có quyền xem đơn hàng này");
+        }
         return ResponseEntity.ok(orderService.getOrderHistory(id));
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<OrderResponse>> getOrdersByUser(@PathVariable String userId) {
+    public ResponseEntity<?> getOrdersByUser(@PathVariable String userId, Authentication auth) {
+        if (auth == null || auth.getName() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+        }
+        boolean isAdmin = auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        if (!isAdmin && !userId.equals(auth.getName())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Bạn không có quyền xem đơn hàng của người dùng này");
+        }
         return ResponseEntity.ok(orderService.getOrdersByUser(userId).stream().map(OrderResponse::from).toList());
     }
 
@@ -139,5 +153,12 @@ public class OrderController {
         if (auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) return true;
         Store store = storeRepository.findById(storeId).orElse(null);
         return store != null && store.getUserId().equals(auth.getName());
+    }
+
+    /** Được xem đơn nếu là: chủ đơn, chủ store của đơn, hoặc admin. */
+    private boolean canViewOrder(Authentication auth, Order order) {
+        if (auth == null || auth.getName() == null || order == null) return false;
+        if (auth.getName().equals(order.getUserId())) return true;
+        return isStoreOwnerOrAdmin(auth, order.getStoreId());
     }
 }
