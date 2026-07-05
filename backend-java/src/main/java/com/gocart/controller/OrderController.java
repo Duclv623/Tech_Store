@@ -101,12 +101,6 @@ public class OrderController {
                 .stream().map(OrderResponse::from).toList());
     }
 
-    @PostMapping
-    public ResponseEntity<Order> createOrder(@RequestBody Order order) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(orderService.createOrder(order));
-    }
-
     @PatchMapping("/{id}/status")
     public ResponseEntity<?> updateOrderStatus(
             @PathVariable String id,

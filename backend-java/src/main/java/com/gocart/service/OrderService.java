@@ -70,10 +70,6 @@ public class OrderService {
         return orderRepository.findByStoreIdAndStatus(storeId, status);
     }
 
-    public Order createOrder(Order order) {
-        return orderRepository.save(order);
-    }
-
     /**
      * Place an order from a cart. Groups items by storeId — creates ONE order per store.
      * Prices are recomputed from the database for security (client can't fake price).
