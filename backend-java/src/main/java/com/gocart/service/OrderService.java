@@ -87,10 +87,31 @@ public class OrderService {
         Map<String, Double> totalByStore = new LinkedHashMap<>();
 
         for (CreateOrderRequest.Item line : req.getItems()) {
-            Product p = productRepository.findById(line.getProductId())
+            // Khóa hàng để check + trừ kho an toàn khi có đơn đặt song song
+            Product p = productRepository.findByIdForUpdate(line.getProductId())
                     .orElseThrow(() -> new ResponseStatusException(
                             HttpStatus.BAD_REQUEST, "Product not found: " + line.getProductId()));
             int qty = line.getQuantity() == null || line.getQuantity() < 1 ? 1 : line.getQuantity();
+
+            // 1) Sản phẩm còn được bán không
+            if (Boolean.FALSE.equals(p.getInStock())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Sản phẩm không còn được bán: " + p.getName());
+            }
+            // 2) Đủ số lượng không
+            int available = p.getStockQuantity() == null ? 0 : p.getStockQuantity();
+            if (available < qty) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Không đủ hàng cho \"" + p.getName() + "\" (còn " + available + ", cần " + qty + ")");
+            }
+            // 3) Trừ kho; hết hàng thì đánh dấu ngừng bán
+            int remaining = available - qty;
+            p.setStockQuantity(remaining);
+            if (remaining == 0) {
+                p.setInStock(false);
+            }
+            productRepository.save(p);
+
             double price = p.getPrice() == null ? 0d : p.getPrice();
 
             OrderItem oi = new OrderItem();

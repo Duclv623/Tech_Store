@@ -22,7 +22,11 @@ const ProductDetails = ({ product }) => {
     const defaultImage = product.images && product.images.length > 0 ? product.images[0] : '/placeholder.png';
     const [mainImage, setMainImage] = useState(defaultImage);
 
+    const stockQuantity = product.stockQuantity ?? 0
+    const outOfStock = product.inStock === false || stockQuantity <= 0
+
     const addToCartHandler = () => {
+        if (outOfStock) return
         dispatch(addToCart({ productId }))
     }
 
@@ -65,17 +69,30 @@ const ProductDetails = ({ product }) => {
                     <TagIcon size={14} />
                     <p>Tiết kiệm {((product.mrp - product.price) / product.mrp * 100).toFixed(0)}% ngay bây giờ</p>
                 </div>
-                <div className="flex items-end gap-5 mt-10">
+                <div className="mt-4">
+                    {outOfStock ? (
+                        <span className="inline-block px-3 py-1 text-sm font-medium rounded bg-red-50 text-red-600">Hết hàng</span>
+                    ) : stockQuantity <= 5 ? (
+                        <span className="inline-block px-3 py-1 text-sm font-medium rounded bg-amber-50 text-amber-600">Chỉ còn {stockQuantity} sản phẩm</span>
+                    ) : (
+                        <span className="inline-block px-3 py-1 text-sm font-medium rounded bg-green-50 text-green-600">Còn hàng</span>
+                    )}
+                </div>
+                <div className="flex items-end gap-5 mt-6">
                     {
-                        cart[productId] && (
+                        cart[productId] && !outOfStock && (
                             <div className="flex flex-col gap-3">
                                 <p className="text-lg text-slate-800 font-semibold">Số lượng</p>
-                                <Counter productId={productId} />
+                                <Counter productId={productId} max={stockQuantity} />
                             </div>
                         )
                     }
-                    <button onClick={() => !cart[productId] ? addToCartHandler() : router.push('/cart')} className="bg-slate-800 text-white px-10 py-3 text-sm font-medium rounded hover:bg-slate-900 active:scale-95 transition">
-                        {!cart[productId] ? 'Thêm vào giỏ' : 'Xem giỏ hàng'}
+                    <button
+                        onClick={() => !cart[productId] ? addToCartHandler() : router.push('/cart')}
+                        disabled={outOfStock && !cart[productId]}
+                        className="bg-slate-800 text-white px-10 py-3 text-sm font-medium rounded hover:bg-slate-900 active:scale-95 transition disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-slate-800"
+                    >
+                        {outOfStock ? 'Hết hàng' : !cart[productId] ? 'Thêm vào giỏ' : 'Xem giỏ hàng'}
                     </button>
                 </div>
                 <hr className="border-gray-300 my-5" />

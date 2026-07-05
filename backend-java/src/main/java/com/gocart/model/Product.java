@@ -37,7 +37,14 @@ public class Product {
     
     private String category;
     private Boolean inStock = true;
-    
+
+    /**
+     * Số lượng còn trong kho. Trừ dần mỗi khi đặt hàng; = 0 thì hết hàng.
+     * Để nullable ở tầng entity để Hibernate (ddl-auto=update) thêm cột được trên DB có sẵn dữ liệu;
+     * ràng buộc NOT NULL + backfill do db/patch-stock-quantity.sql đảm nhiệm.
+     */
+    private Integer stockQuantity = 0;
+
     private String storeId;
     
     @ManyToOne(fetch = FetchType.LAZY)

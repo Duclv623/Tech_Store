@@ -54,7 +54,11 @@ public class ProductService {
         existingProduct.setImages(product.getImages());
         existingProduct.setCategory(product.getCategory());
         existingProduct.setInStock(product.getInStock());
-        
+        // Chỉ cập nhật kho khi client thực sự gửi field này (tránh vô tình về null/0)
+        if (product.getStockQuantity() != null) {
+            existingProduct.setStockQuantity(product.getStockQuantity());
+        }
+
         return productRepository.save(existingProduct);
     }
 

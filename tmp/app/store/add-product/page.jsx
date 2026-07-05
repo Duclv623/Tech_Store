@@ -15,6 +15,7 @@ export default function StoreAddProduct() {
         mrp: 0,
         price: 0,
         category: "",
+        stockQuantity: 0,
     })
     const [loading, setLoading] = useState(false)
 
@@ -59,10 +60,12 @@ export default function StoreAddProduct() {
                 category: productInfo.category,
                 storeId: store.id,
                 images: imageUrls,
+                stockQuantity: Number(productInfo.stockQuantity),
+                inStock: Number(productInfo.stockQuantity) > 0,
             })
 
             // 5) Reset form
-            setProductInfo({ name: "", description: "", mrp: 0, price: 0, category: "" })
+            setProductInfo({ name: "", description: "", mrp: 0, price: 0, category: "", stockQuantity: 0 })
             setImages({ 1: null, 2: null, 3: null, 4: null })
         } finally {
             setLoading(false)
@@ -106,6 +109,10 @@ export default function StoreAddProduct() {
                 <label htmlFor="" className="flex flex-col gap-2 ">
                     Giá bán ($)
                     <input type="number" name="price" onChange={onChangeHandler} value={productInfo.price} placeholder="0" rows={5} className="w-full max-w-45 p-2 px-4 outline-none border border-slate-200 rounded resize-none" required />
+                </label>
+                <label htmlFor="" className="flex flex-col gap-2 ">
+                    Số lượng kho
+                    <input type="number" name="stockQuantity" min={0} step={1} onChange={onChangeHandler} value={productInfo.stockQuantity} placeholder="0" className="w-full max-w-45 p-2 px-4 outline-none border border-slate-200 rounded resize-none" required />
                 </label>
             </div>
 
