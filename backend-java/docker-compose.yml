@@ -43,12 +43,17 @@ services:
       MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-admin123}
       MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-admin123}
       MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME:-gocart}
+      # Redis: host là tên service trong mạng Docker (không phải localhost)
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
     ports:
       - "8080:8080"
     depends_on:
       postgres:
         condition: service_healthy
       minio:
+        condition: service_started
+      redis:
         condition: service_started
     networks:
       - gocart-network
@@ -79,6 +84,15 @@ services:
       - "9001:9001" # MinIO Console
     volumes:
       - minio_data:/data
+    networks:
+      - gocart-network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: gocart-redis
+    ports:
+      - "6379:6379"
     networks:
       - gocart-network
     restart: unless-stopped

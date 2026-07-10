@@ -1,5 +1,6 @@
 package com.gocart.controller;
 
+import com.gocart.dto.ProductResponse;
 import com.gocart.model.Product;
 import com.gocart.model.Store;
 import com.gocart.repository.StoreRepository;
@@ -22,29 +23,29 @@ public class ProductController {
     private final StoreRepository storeRepository;
 
     @GetMapping
-    public ResponseEntity<List<Product>> getAllProducts() {
+    public ResponseEntity<List<ProductResponse>> getAllProducts() {
         return ResponseEntity.ok(productService.getAllProducts());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable String id) {
+    public ResponseEntity<ProductResponse> getProductById(@PathVariable String id) {
         return productService.getProductById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/store/{storeId}")
-    public ResponseEntity<List<Product>> getProductsByStore(@PathVariable String storeId) {
+    public ResponseEntity<List<ProductResponse>> getProductsByStore(@PathVariable String storeId) {
         return ResponseEntity.ok(productService.getProductsByStore(storeId));
     }
 
     @GetMapping("/category/{category}")
-    public ResponseEntity<List<Product>> getProductsByCategory(@PathVariable String category) {
+    public ResponseEntity<List<ProductResponse>> getProductsByCategory(@PathVariable String category) {
         return ResponseEntity.ok(productService.getProductsByCategory(category));
     }
 
     @GetMapping("/latest")
-    public ResponseEntity<List<Product>> getLatestProducts() {
+    public ResponseEntity<List<ProductResponse>> getLatestProducts() {
         return ResponseEntity.ok(productService.getLatestProducts());
     }
 

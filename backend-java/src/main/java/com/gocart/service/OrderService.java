@@ -12,6 +12,8 @@ import com.gocart.repository.OrderStatusHistoryRepository;
 import com.gocart.repository.ProductRepository;
 import com.gocart.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -74,6 +76,13 @@ public class OrderService {
      * Place an order from a cart. Groups items by storeId — creates ONE order per store.
      * Prices are recomputed from the database for security (client can't fake price).
      */
+    @Caching(evict = {
+            @CacheEvict(value = "product", allEntries = true),
+            @CacheEvict(value = "products", allEntries = true),
+            @CacheEvict(value = "productsByStore", allEntries = true),
+            @CacheEvict(value = "productsByCategory", allEntries = true),
+            @CacheEvict(value = "latestProducts", allEntries = true)
+    })
     public List<Order> placeOrder(String userId, CreateOrderRequest req) {
         if (req == null || req.getItems() == null || req.getItems().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cart is empty");
